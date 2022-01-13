@@ -1,5 +1,7 @@
 package net.reindiegames.re2d.core;
 
+import net.reindiegames.re2d.client.gl.Camera;
+import net.reindiegames.re2d.client.gl.LevelRenderPipeline;
 import net.reindiegames.re2d.client.gl.Shader;
 import net.reindiegames.re2d.client.gl.SpriteMesh;
 import net.reindiegames.re2d.client.input.Input;
@@ -24,6 +26,8 @@ public class GameContext {
 
     public static boolean debug = false;
 
+    private final LevelRenderPipeline levelRenderPipeline;
+    private final Camera camera;
     private long window;
 
     private GameContext() {
@@ -61,6 +65,8 @@ public class GameContext {
 
         Log.info("Setting up OpenGL...");
         GL.createCapabilities();
+        this.camera = new Camera();
+        this.levelRenderPipeline = new LevelRenderPipeline();
 
         Log.info("Setting up Input...");
         Input.create(window);
@@ -116,7 +122,7 @@ public class GameContext {
             }
 
             GLFW.glfwPollEvents();
-            //TODO Render here
+            levelRenderPipeline.render(camera, window, totalTicks);
             frames++;
 
             GLFW.glfwSwapBuffers(window);

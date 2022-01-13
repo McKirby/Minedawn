@@ -11,7 +11,7 @@ public enum Input {
     MOVE_EAST(GLFW.GLFW_KEY_D),
     MOVE_SOUTH(GLFW.GLFW_KEY_S),
     EXIT_GAME(GLFW.GLFW_KEY_ESCAPE),
-    DEBUG(GLFW.GLFW_KEY_LEFT_SHIFT);
+    DEBUG(GLFW.GLFW_KEY_TAB);
 
     private static final Map<Integer, Input> keyInputMap = new HashMap<>();
     private static long window;

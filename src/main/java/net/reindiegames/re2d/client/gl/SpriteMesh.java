@@ -26,7 +26,7 @@ public class SpriteMesh {
     public final int[] triangleIndices;
     public final int[] lineIndices;
 
-    public SpriteMesh(String name, float[] v, float[] t, int[] triangleIndices, int[] lineIndices) {
+    protected SpriteMesh(String name, float[] v, float[] t, int[] triangleIndices, int[] lineIndices) {
         this.name = name;
         this.vertices = v;
         this.textureCoordinates = t;
@@ -39,7 +39,6 @@ public class SpriteMesh {
         GL30.glBindVertexArray(vao);
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnableVertexAttribArray(1);
-        GL30.glEnableVertexAttribArray(2);
 
         this.vertexVbo = this.storeAsAttribute(0, v, 2);
         this.textureCoordinateVbo = this.storeAsAttribute(1, t, 2);
@@ -47,6 +46,26 @@ public class SpriteMesh {
         this.lineIndicesVbo = this.storeAsIndices(lineIndices);
 
         GL30.glBindVertexArray(0);
+    }
+
+    public static SpriteMesh create(String name, float[] textureCoordinates) {
+        float[] vertices = {
+                -0.5f, 0.5f,
+                0.5f, 0.5f,
+                -0.5f, -0.5f,
+                0.5f, -0.5f,
+        };
+        int[] triangleIndices = {
+                0, 2, 1,
+                1, 2, 3,
+        };
+        int[] lineIndices = {
+                0, 2,
+                2, 3,
+                3, 1,
+                1, 0,
+        };
+        return new SpriteMesh(name, vertices, textureCoordinates, triangleIndices, lineIndices);
     }
 
     public static void dispose() {
