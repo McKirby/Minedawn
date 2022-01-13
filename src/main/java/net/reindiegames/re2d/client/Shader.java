@@ -1,4 +1,4 @@
-package net.reindiegames.re2d.client.gl;
+package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.MathUtil;
 import net.reindiegames.util.Log;
@@ -18,15 +18,12 @@ import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class Shader {
-    protected static final Vector2f X_AXIS = new Vector2f(1.0f, 0.0f);
-    protected static final Vector2f Y_AXIS = new Vector2f(0.0f, 1.0f);
-
+abstract class Shader {
     private static final Set<Integer> createdShaders = new HashSet<>();
     private static final Set<Integer> createdPrograms = new HashSet<>();
 
-    public final String vertexFile;
-    public final String fragmentFile;
+    protected final String vertexFile;
+    protected final String fragmentFile;
 
     private final FloatBuffer matrixBuffer;
 
@@ -34,7 +31,7 @@ public abstract class Shader {
     protected int vertexShader = 0;
     protected int fragmentShader = 0;
 
-    public Shader(String vertexFile, String fragmentFile) throws IllegalArgumentException {
+    protected Shader(String vertexFile, String fragmentFile) throws IllegalArgumentException {
         this.vertexFile = vertexFile;
         this.fragmentFile = fragmentFile;
 
@@ -65,7 +62,7 @@ public abstract class Shader {
         }
     }
 
-    public static void dispose() {
+    protected static void dispose() {
         Shader.unbind();
 
         for (int shader : createdShaders) {
@@ -77,7 +74,7 @@ public abstract class Shader {
         }
     }
 
-    private static int loadShader(String res, int type) throws IllegalArgumentException {
+    protected static int loadShader(String res, int type) throws IllegalArgumentException {
         String sourceCode = null;
         try {
             final InputStream in = Shader.class.getClassLoader().getResourceAsStream(res);
@@ -109,52 +106,52 @@ public abstract class Shader {
         return shader;
     }
 
-    public static void unbind() {
+    protected static void unbind() {
         GL30.glUseProgram(0);
     }
 
-    public abstract void loadUniforms();
+    protected abstract void loadUniforms();
 
-    public void bind() {
+    protected void bind() {
         GL30.glUseProgram(program);
     }
 
-    public final int getUniformLocation(String variable) {
+    protected final int getUniformLocation(String variable) {
         return GL30.glGetUniformLocation(program, variable);
     }
 
-    public void loadFloat(int loc, float value) {
+    protected final void loadFloat(int loc, float value) {
         GL30.glUniform1f(loc, value);
     }
 
-    public void loadInteger(int loc, int value) {
+    protected final void loadInteger(int loc, int value) {
         GL30.glUniform1i(loc, value);
     }
 
-    public void loadBoolean(int loc, boolean value) {
+    protected final void loadBoolean(int loc, boolean value) {
         GL30.glUniform1i(loc, value ? 1 : 0);
     }
 
-    public void loadVector3f(int loc, Vector3f vec) {
+    protected final void loadVector3f(int loc, Vector3f vec) {
         GL30.glUniform3f(loc, vec.x, vec.y, vec.z);
     }
 
-    public void loadVector2f(int loc, Vector2f vec) {
+    protected final void loadVector2f(int loc, Vector2f vec) {
         GL30.glUniform2f(loc, vec.x, vec.y);
     }
 
-    public void loadVector4f(int loc, Vector4f vec) {
+    protected final void loadVector4f(int loc, Vector4f vec) {
         GL30.glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
     }
 
-    public void loadMatrix4f(int loc, Matrix4f value) {
+    protected final void loadMatrix4f(int loc, Matrix4f value) {
         float[] array = new float[16];
         MathUtil.toFloatArray(value, array);
 
         GL30.glUniformMatrix4fv(loc, false, array);
     }
 
-    public void loadMatrixArray(int loc, float[] matrix) {
+    protected final void loadMatrixArray(int loc, float[] matrix) {
         GL30.glUniformMatrix4fv(loc, false, matrix);
     }
 }

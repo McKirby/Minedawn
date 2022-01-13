@@ -1,4 +1,4 @@
-package net.reindiegames.re2d.client.gl;
+package net.reindiegames.re2d.client;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -10,21 +10,21 @@ import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SpriteMesh {
+class SpriteMesh {
     private static final Set<Integer> createdVaos = new HashSet<>();
     private static final Set<Integer> createdVbos = new HashSet<>();
 
-    public final int vao;
-    public final int vertexVbo;
-    public final int textureCoordinateVbo;
-    public final int triangleIndicesVbo;
-    public final int lineIndicesVbo;
+    protected final int vao;
+    protected final int vertexVbo;
+    protected final int textureCoordinateVbo;
+    protected final int triangleIndicesVbo;
+    protected final int lineIndicesVbo;
 
-    public final String name;
-    public final float[] vertices;
-    public final float[] textureCoordinates;
-    public final int[] triangleIndices;
-    public final int[] lineIndices;
+    protected final String name;
+    protected final float[] vertices;
+    protected final float[] textureCoordinates;
+    protected final int[] triangleIndices;
+    protected final int[] lineIndices;
 
     protected SpriteMesh(String name, float[] v, float[] t, int[] triangleIndices, int[] lineIndices) {
         this.name = name;
@@ -48,7 +48,7 @@ public class SpriteMesh {
         GL30.glBindVertexArray(0);
     }
 
-    public static SpriteMesh create(String name, float[] textureCoordinates) {
+    protected static SpriteMesh create(String name, float[] textureCoordinates) {
         float[] vertices = {
                 -0.5f, 0.5f,
                 0.5f, 0.5f,
@@ -68,7 +68,7 @@ public class SpriteMesh {
         return new SpriteMesh(name, vertices, textureCoordinates, triangleIndices, lineIndices);
     }
 
-    public static void dispose() {
+    protected static void dispose() {
         GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
         for (int vbo : createdVbos) {
             GL30.glDeleteBuffers(vbo);

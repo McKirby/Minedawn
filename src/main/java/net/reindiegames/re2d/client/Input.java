@@ -1,11 +1,11 @@
-package net.reindiegames.re2d.client.input;
+package net.reindiegames.re2d.client;
 
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public enum Input {
+enum Input {
     MOVE_NORTH(GLFW.GLFW_KEY_W),
     MOVE_WEST(GLFW.GLFW_KEY_A),
     MOVE_EAST(GLFW.GLFW_KEY_D),
@@ -24,7 +24,7 @@ public enum Input {
         this.keyCode = keyCode;
     }
 
-    public static void create(long w) {
+    protected static boolean setup(long w) {
         for (Input input : Input.values()) {
             keyInputMap.put(input.keyCode, input);
         }
@@ -41,13 +41,14 @@ public enum Input {
                 input.action.onKeyAction(input.pressed);
             }
         });
+        return true;
     }
 
-    public void setAction(KeyAction action) {
+    protected void setAction(KeyAction action) {
         this.action = action;
     }
 
-    public boolean isPressed() {
+    protected boolean isPressed() {
         return pressed;
     }
 }
