@@ -1,6 +1,6 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.GameContext;
+import net.reindiegames.re2d.core.meta.GameContext;
 
 class LevelRenderPipeline {
     private final TerrainRenderStage terrainRenderStage;

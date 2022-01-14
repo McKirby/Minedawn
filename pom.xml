@@ -117,7 +117,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.reindiegames.re2d.core.GameContext</mainClass>
+                            <mainClass>net.reindiegames.re2d.core.meta.GameContext</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

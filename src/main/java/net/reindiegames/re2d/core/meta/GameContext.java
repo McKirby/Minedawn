@@ -1,4 +1,4 @@
-package net.reindiegames.re2d.core;
+package net.reindiegames.re2d.core.meta;
 
 import net.reindiegames.re2d.client.ClientContext;
 import net.reindiegames.util.Log;

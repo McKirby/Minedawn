@@ -1,8 +1,8 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.Disposer;
-import net.reindiegames.re2d.core.GameContext;
-import net.reindiegames.re2d.core.Initializer;
+import net.reindiegames.re2d.core.meta.Disposer;
+import net.reindiegames.re2d.core.meta.GameContext;
+import net.reindiegames.re2d.core.meta.Initializer;
 import net.reindiegames.util.Log;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
