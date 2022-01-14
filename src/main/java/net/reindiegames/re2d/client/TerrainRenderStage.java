@@ -9,8 +9,9 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
 
-import static net.reindiegames.re2d.client.ClientConstants.clearColor;
-import static net.reindiegames.re2d.client.ClientConstants.tilePixelSize;
+import static net.reindiegames.re2d.client.ClientParameters.clearColor;
+import static net.reindiegames.re2d.client.ClientParameters.tilePixelSize;
+import static net.reindiegames.re2d.core.CoreParameters.debug;
 
 class TerrainRenderStage extends RenderStage<TerrainShader> {
     private final IntBuffer heightBuffer;
@@ -30,8 +31,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader> {
     protected void load() {
     }
 
-    @Override
-    protected void prepare(Camera camera, long window) {
+    protected void prepare(long window, float cty, float ctx) {
         GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer);
         int width = widthBuffer.get(0);
         int height = heightBuffer.get(0);
@@ -41,17 +41,20 @@ class TerrainRenderStage extends RenderStage<TerrainShader> {
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glCullFace(GL11.GL_BACK);
 
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
         GL11.glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         shader.bind();
-        shader.loadProjectionView(camera, width, height);
+        shader.loadProjectionView(ctx, cty, width, height);
         shader.loadTextureBank(0);
         TextureAtlas.TERRAIN.bind(0);
     }
 
     @Override
-    protected void process(long totalTicks, boolean debug) {
+    protected void process(long totalTicks) {
         GL30.glBindVertexArray(mesh.vao);
         shader.loadTransformation(new Vector2f(0.0f, 0.0f), 0.0f, new Vector2f(tilePixelSize, tilePixelSize));
 

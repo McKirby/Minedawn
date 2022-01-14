@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 enum TextureAtlas {
@@ -29,18 +30,27 @@ enum TextureAtlas {
     }
 
     protected static boolean setup() {
-        Log.debug("Loading Texture-Atlases...");
         for (TextureAtlas atlas : TextureAtlas.values()) {
-            Log.debug("\t- " + atlas.resource + " ...");
+            InputStream in = null;
             PNGDecoder decoder = null;
             ByteBuffer buffer = null;
             try {
-                decoder = new PNGDecoder(TextureAtlas.class.getClassLoader().getResourceAsStream(atlas.resource));
+                in = TextureAtlas.class.getClassLoader().getResourceAsStream(atlas.resource);
+                decoder = new PNGDecoder(in);
+
                 buffer = BufferUtils.createByteBuffer(4 * decoder.getWidth() * decoder.getHeight());
                 decoder.decode(buffer, 4 * decoder.getWidth(), PNGDecoder.Format.RGBA);
                 buffer.flip();
             } catch (IOException e) {
                 Log.error("Could not load Atlas '" + atlas.resource + "' (" + e.getMessage() + ")!");
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             atlas.textureId = GL11.glGenTextures();
@@ -55,6 +65,13 @@ enum TextureAtlas {
             );
         }
         return true;
+    }
+
+    protected static void dispose() {
+        for(TextureAtlas atlas : TextureAtlas.values()) {
+            GL11.glDeleteTextures(atlas.textureId);
+        }
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
     }
 
     protected float[] getTextureCoords(int column, int row) {

@@ -1,5 +1,7 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.level.Level;
+
 abstract class RenderStage<S extends Shader> {
     protected final S shader;
 
@@ -7,19 +9,19 @@ abstract class RenderStage<S extends Shader> {
         this.shader = shader;
     }
 
-    protected final void render(Camera camera, long window, long totalTicks, boolean debug) {
+    protected final void render(Level level, long window, float ctx, float cty, long totalTicks) {
         this.load();
-        this.prepare(camera, window);
-        this.process(totalTicks, debug);
+        this.prepare(window, ctx, cty);
+        this.process(totalTicks);
         this.finish();
         this.yield();
     }
 
     protected abstract void load();
 
-    protected abstract void prepare(Camera camera, long window);
+    protected abstract void prepare(long window, float ctx, float cty);
 
-    protected abstract void process(long totalTicks, boolean debug);
+    protected abstract void process(long totalTicks);
 
     protected abstract void finish();
 

@@ -1,27 +1,17 @@
-package net.reindiegames.re2d.core.meta;
+package net.reindiegames.re2d.core;
 
 import net.reindiegames.re2d.client.ClientContext;
+import net.reindiegames.re2d.core.util.Disposer;
+import net.reindiegames.re2d.core.util.Initializer;
+import net.reindiegames.re2d.core.util.ReflectionUtil;
 import net.reindiegames.util.Log;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+
+import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 
 public abstract class GameContext {
-    public static final int TICK_RATE = 20;
-    public static final String TITLE = "Re2D";
-    public static boolean debug = false;
-
     protected GameContext() {
-    }
-
-    private static void invokeAnnotatedStatic(Class<?> clazz, Class<? extends Annotation> annotation) throws Exception {
-        for (final Method method : clazz.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(annotation)) {
-                method.setAccessible(true);
-                method.invoke(null);
-            }
-        }
     }
 
     public static void main(String[] args) {
@@ -35,24 +25,23 @@ public abstract class GameContext {
 
         try {
             Log.info("Initializing...");
-            GameContext.invokeAnnotatedStatic(contextImpl, Initializer.class);
+            ReflectionUtil.invokeAnnotatedStatics(contextImpl, Initializer.class);
 
             Constructor constructor = contextImpl.getDeclaredConstructor();
             constructor.setAccessible(true);
             GameContext context = (GameContext) constructor.newInstance();
             context.start();
         } catch (Exception e) {
-            Log.error("Failed to initialize Context!");
+            Log.error("Failed to initialize Context (" + e.getMessage() + ")!");
             e.printStackTrace();
         }
 
         try {
             Log.info("Disposing...");
-            GameContext.invokeAnnotatedStatic(contextImpl, Disposer.class);
+            ReflectionUtil.invokeAnnotatedStatics(contextImpl, Disposer.class);
         } catch (Exception e) {
-            Log.error("Failed to dispose the Context properly!");
+            Log.error("Failed to dispose the Context properly (" + e.getMessage() + ")!");
             e.printStackTrace();
-            return;
         }
 
         Log.info("Bye!");

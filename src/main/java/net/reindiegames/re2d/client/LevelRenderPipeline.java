@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.meta.GameContext;
+import net.reindiegames.re2d.core.GameContext;
+import net.reindiegames.re2d.core.level.Level;
 
 class LevelRenderPipeline {
     private final TerrainRenderStage terrainRenderStage;
@@ -9,7 +10,7 @@ class LevelRenderPipeline {
         this.terrainRenderStage = new TerrainRenderStage();
     }
 
-    protected void render(Camera camera, long window, long totalTicks) {
-        terrainRenderStage.render(camera, window, totalTicks, GameContext.debug);
+    protected void render(Level level, long window, float ctx, float cty, long totalTicks) {
+        terrainRenderStage.render(level, window, ctx, cty, totalTicks);
     }
 }

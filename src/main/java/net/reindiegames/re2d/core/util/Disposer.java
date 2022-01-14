@@ -1,4 +1,4 @@
-package net.reindiegames.re2d.core.meta;
+package net.reindiegames.re2d.core.util;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

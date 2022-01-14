@@ -1,8 +1,9 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.meta.Disposer;
-import net.reindiegames.re2d.core.meta.GameContext;
-import net.reindiegames.re2d.core.meta.Initializer;
+import net.reindiegames.re2d.core.GameContext;
+import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.util.Disposer;
+import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.util.Log;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
@@ -13,16 +14,20 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
-import static net.reindiegames.re2d.client.ClientConstants.DEFAULT_HEIGHT;
-import static net.reindiegames.re2d.client.ClientConstants.DEFAULT_WIDTH;
+import static net.reindiegames.re2d.client.ClientParameters.DEFAULT_HEIGHT;
+import static net.reindiegames.re2d.client.ClientParameters.DEFAULT_WIDTH;
+import static net.reindiegames.re2d.core.CoreParameters.TITLE;
+import static net.reindiegames.re2d.core.CoreParameters.debug;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class ClientContext extends GameContext {
     protected static ClientContext runningContext = null;
 
     protected static LevelRenderPipeline levelRenderPipeline;
-    protected static Camera camera;
     protected static long window;
+    protected static float ctx;
+    protected static float cty;
+    protected static Level currentLevel;
 
     private ClientContext() {
     }
@@ -81,18 +86,23 @@ public class ClientContext extends GameContext {
         if (!TextureAtlas.setup()) throw new IllegalStateException("Failed to load all Texture-Atlases!");
 
         Log.info("Setting up Render-Pipelines...");
-        camera = new Camera();
         levelRenderPipeline = new LevelRenderPipeline();
+        ctx = 0.0f;
+        cty = 0.0f;
+
+        Log.info("Loading Level...");
+        currentLevel = new Level();
     }
 
     @Disposer
     private static final void dispose() {
         Log.info("Disposing Assets...");
         Shader.dispose();
+        TextureAtlas.dispose();
         SpriteMesh.dispose();
-        Callbacks.glfwFreeCallbacks(window);
 
         Log.info("Disposing the OpenGL-Context...");
+        Callbacks.glfwFreeCallbacks(window);
         GLFW.glfwDestroyWindow(window);
         GLFW.glfwTerminate();
         GLFW.glfwSetErrorCallback(null).free();
@@ -105,7 +115,7 @@ public class ClientContext extends GameContext {
     @Override
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
-        levelRenderPipeline.render(camera, window, totalTicks);
+        levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);
     }
 
