@@ -23,7 +23,7 @@ public interface IO {
         FileReader in = null;
         try {
             in = new FileReader(file);
-            return net.reindiegames.util.io.IO.readStreamContent(in);
+            return IO.readStreamContent(in);
         } finally {
             if (in != null) {
                 in.close();
@@ -32,9 +32,9 @@ public interface IO {
     }
 
     public static String readResourceContent(String resource) throws IOException {
-        final InputStream in = net.reindiegames.util.io.IO.class.getClassLoader().getResourceAsStream(resource);
+        final InputStream in = IO.class.getClassLoader().getResourceAsStream(resource);
         final InputStreamReader reader = new InputStreamReader(in);
-        return net.reindiegames.util.io.IO.readStreamContent(reader);
+        return IO.readStreamContent(reader);
     }
 
     public static boolean writeToFile(String value, String folderName, String fileName) throws IOException {
@@ -57,7 +57,7 @@ public interface IO {
 
         try {
             in = new InputStreamReader(url.openStream());
-            return net.reindiegames.util.io.IO.readStreamContent(in);
+            return IO.readStreamContent(in);
         } finally {
             if (in != null) {
                 in.close();

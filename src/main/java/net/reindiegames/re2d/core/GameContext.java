@@ -4,7 +4,7 @@ import net.reindiegames.re2d.client.ClientContext;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
-import net.reindiegames.util.Log;
+import net.reindiegames.re2d.core.Log;
 
 import java.lang.reflect.Constructor;
 

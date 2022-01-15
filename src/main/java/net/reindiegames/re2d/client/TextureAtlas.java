@@ -1,7 +1,7 @@
 package net.reindiegames.re2d.client;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
-import net.reindiegames.util.Log;
+import net.reindiegames.re2d.core.Log;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;

@@ -1,8 +1,6 @@
 package net.reindiegames.re2d.core.io;
 
 import com.google.gson.JsonObject;
-import net.reindiegames.util.io.IO;
-import net.reindiegames.util.io.JsonIO;
 
 import java.io.IOException;
 
@@ -18,10 +16,10 @@ public interface JsonFileIO extends JsonIO {
     public abstract JsonObject save();
 
     public default boolean saveToFile(String folderName, String fileName, boolean pretty) throws IOException {
-        return net.reindiegames.util.io.JsonFileIO.saveObjectToFile(this.save(), folderName, fileName, pretty);
+        return JsonFileIO.saveObjectToFile(this.save(), folderName, fileName, pretty);
     }
 
     public default void loadFromFile(String folderName, String fileName) throws IOException {
-        this.load(net.reindiegames.util.io.JsonFileIO.loadObjectFromFile(folderName, fileName));
+        this.load(JsonFileIO.loadObjectFromFile(folderName, fileName));
     }
 }

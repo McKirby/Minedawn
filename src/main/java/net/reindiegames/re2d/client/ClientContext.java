@@ -4,7 +4,7 @@ import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
-import net.reindiegames.util.Log;
+import net.reindiegames.re2d.core.Log;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;

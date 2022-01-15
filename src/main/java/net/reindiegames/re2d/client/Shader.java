@@ -1,6 +1,6 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.util.Log;
+import net.reindiegames.re2d.core.Log;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
