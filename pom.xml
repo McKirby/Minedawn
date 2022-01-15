@@ -11,13 +11,6 @@
         <joml.version>1.10.2</joml.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
     </properties>
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>Github Packages</name>
-            <url>https://maven.pkg.github.com/McKirby/Minedawn</url>
-        </repository>
-    </distributionManagement>
     <dependencyManagement>
         <dependencies>
             <dependency>
