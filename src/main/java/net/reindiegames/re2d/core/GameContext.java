@@ -1,7 +1,9 @@
 package net.reindiegames.re2d.core;
 
 import net.reindiegames.re2d.client.ClientContext;
+import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.entity.EntityType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
@@ -23,10 +25,14 @@ public abstract class GameContext {
             return;
         }
 
-        try {
-            Log.info("Loading Core...");
-            TileType.loadAll();
+        Log.info("Loading Libraries...");
 
+        Log.info("Loading Core...");
+        if (!GameResource.loadAll(TileType.class)) throw new IllegalArgumentException("Cannot load Tiles!");
+        if (!GameResource.loadAll(EntityType.class)) throw new IllegalArgumentException("Cannot load Entities!");
+        if (!GameResource.loadAll(ResourceLevel.class)) throw new IllegalArgumentException("Cannot load Levels!");
+
+        try {
             Log.info("Initializing...");
             ReflectionUtil.invokeAnnotatedStatics(contextImpl, Initializer.class);
 

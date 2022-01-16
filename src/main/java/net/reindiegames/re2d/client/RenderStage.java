@@ -1,6 +1,6 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.ResourceLevel;
 
 abstract class RenderStage<S extends Shader> {
     protected final S shader;
@@ -9,7 +9,7 @@ abstract class RenderStage<S extends Shader> {
         this.shader = shader;
     }
 
-    protected final void render(Level level, long window, float ctx, float cty, long totalTicks) {
+    protected final void render(ResourceLevel level, long window, float ctx, float cty, long totalTicks) {
         this.load();
         this.prepare(window, ctx, cty);
         this.process(totalTicks);

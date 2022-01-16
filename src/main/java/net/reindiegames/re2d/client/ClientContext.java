@@ -2,7 +2,7 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
-import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.lwjgl.glfw.Callbacks;
@@ -27,7 +27,7 @@ public class ClientContext extends GameContext {
     protected static long window;
     protected static float ctx;
     protected static float cty;
-    protected static Level currentLevel;
+    protected static ResourceLevel currentLevel;
 
     private ClientContext() {
     }
@@ -92,9 +92,6 @@ public class ClientContext extends GameContext {
         levelRenderPipeline = new LevelRenderPipeline();
         ctx = 0.0f;
         cty = 0.0f;
-
-        Log.info("Loading Level...");
-        currentLevel = new Level();
     }
 
     @Disposer

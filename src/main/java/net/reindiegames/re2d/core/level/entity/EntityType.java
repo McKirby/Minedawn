@@ -1,4 +1,4 @@
-package net.reindiegames.re2d.core.level;
+package net.reindiegames.re2d.core.level.entity;
 
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.GameResource;
@@ -6,13 +6,13 @@ import net.reindiegames.re2d.core.GameResource;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TileType extends GameResource {
-    public static final String RESOURCE_PATH = "tiles/";
-    private static final Map<Integer, TileType> TILE_TYPES = new HashMap<>();
+public class EntityType extends GameResource {
+    public static final String RESOURCE_PATH = "entities/";
+    private static final Map<Integer, EntityType> ENTITY_TYPES = new HashMap<>();
 
-    private TileType(String resourceName) {
+    private EntityType(String resourceName) {
         super(resourceName);
-        TILE_TYPES.put(id, this);
+        ENTITY_TYPES.put(id, this);
     }
 
     @Override
