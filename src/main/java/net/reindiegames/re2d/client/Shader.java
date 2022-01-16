@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.io.IO;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -74,21 +75,7 @@ abstract class Shader {
     }
 
     protected static int loadShader(String res, int type) throws IllegalArgumentException {
-        String sourceCode = null;
-        try {
-            final InputStream in = Shader.class.getClassLoader().getResourceAsStream(res);
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            final StringBuilder buffer = new StringBuilder();
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line).append("\n");
-            }
-            reader.close();
-            sourceCode = buffer.toString();
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Can not read the Resource '" + res + "'!");
-        }
+        String sourceCode = IO.readResourceContent(res);
 
         final int shader = GL30.glCreateShader(type);
         if (shader == 0) throw new IllegalArgumentException("Can not create Shader?!");

@@ -9,17 +9,17 @@ public interface JsonFileIO extends JsonIO {
         return IO.writeToFile(p ? FANCY_GSON.toJson(o) : GSON.toJson(o), folder, file);
     }
 
-    public static JsonObject loadObjectFromFile(String folderName, String fileName) throws IOException {
-        return PARSER.parse(IO.readFileContent(folderName, fileName)).getAsJsonObject();
+    public static JsonObject loadObjectFromFile(String folder, String file) throws IOException {
+        return PARSER.parse(IO.readFileContent(folder, file)).getAsJsonObject();
     }
 
     public abstract JsonObject save();
 
-    public default boolean saveToFile(String folderName, String fileName, boolean pretty) throws IOException {
-        return JsonFileIO.saveObjectToFile(this.save(), folderName, fileName, pretty);
+    public default boolean saveToFile(String folder, String file, boolean p) throws IOException {
+        return JsonFileIO.saveObjectToFile(this.save(), folder, file, p);
     }
 
-    public default void loadFromFile(String folderName, String fileName) throws IOException {
-        this.load(JsonFileIO.loadObjectFromFile(folderName, fileName));
+    public default void loadFromFile(String folder, String file) throws IOException {
+        this.load(JsonFileIO.loadObjectFromFile(folder, file));
     }
 }

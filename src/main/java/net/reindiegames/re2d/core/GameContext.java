@@ -1,10 +1,10 @@
 package net.reindiegames.re2d.core;
 
 import net.reindiegames.re2d.client.ClientContext;
+import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
-import net.reindiegames.re2d.core.Log;
 
 import java.lang.reflect.Constructor;
 
@@ -24,9 +24,13 @@ public abstract class GameContext {
         }
 
         try {
+            Log.info("Loading Core...");
+            TileType.loadAll();
+
             Log.info("Initializing...");
             ReflectionUtil.invokeAnnotatedStatics(contextImpl, Initializer.class);
 
+            Log.info("Finalizing Context...");
             Constructor constructor = contextImpl.getDeclaredConstructor();
             constructor.setAccessible(true);
             GameContext context = (GameContext) constructor.newInstance();

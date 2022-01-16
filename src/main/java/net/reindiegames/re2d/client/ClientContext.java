@@ -1,10 +1,10 @@
 package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
+import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
-import net.reindiegames.re2d.core.Log;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -35,6 +35,9 @@ public class ClientContext extends GameContext {
     @Initializer
     private static final void initialize() {
         if (runningContext != null) throw new IllegalStateException("There is already a ClientContext Running!");
+
+        Log.info("Bridging the Client to the Core...");
+        ClientCoreBridge.bridge();
 
         Log.info("Creating OpenGL Context...");
         GLFWErrorCallback.createPrint(System.err).set();
