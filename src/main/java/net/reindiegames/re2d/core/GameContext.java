@@ -28,12 +28,12 @@ public abstract class GameContext {
         Log.info("Loading Libraries...");
 
         Log.info("Loading Core...");
-        if (!GameResource.loadAll(TileType.class)) throw new IllegalArgumentException("Cannot load Tiles!");
-        if (!GameResource.loadAll(EntityType.class)) throw new IllegalArgumentException("Cannot load Entities!");
-        if (!GameResource.loadAll(ResourceLevel.class)) throw new IllegalArgumentException("Cannot load Levels!");
+        if (!GameResource.loadAll(TileType.class)) throw new IllegalStateException("Cannot load Tiles!");
+        if (!GameResource.loadAll(EntityType.class)) throw new IllegalStateException("Cannot load Entities!");
+        if (!GameResource.loadAll(ResourceLevel.class)) throw new IllegalStateException("Cannot load Levels!");
 
         try {
-            Log.info("Initializing...");
+            Log.info("Initializing Context...");
             ReflectionUtil.invokeAnnotatedStatics(contextImpl, Initializer.class);
 
             Log.info("Finalizing Context...");

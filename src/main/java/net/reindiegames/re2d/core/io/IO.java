@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface IO {
-    public static String readStreamContent(BufferedReader reader) throws IOException {
+    static String readStreamContent(BufferedReader reader) throws IOException {
         final StringBuilder buffer = new StringBuilder();
 
         String line = null;
@@ -16,7 +16,7 @@ public interface IO {
         return buffer.toString();
     }
 
-    public static String readFileContent(String folder, String file) throws IOException {
+    static String readFileContent(String folder, String file) throws IOException {
         final File fi = new File(folder, file);
         if (!fi.exists()) {
             throw new FileNotFoundException("The File '" + file + "' in '" + folder + "' does not exists!");
@@ -33,7 +33,7 @@ public interface IO {
         }
     }
 
-    public static boolean writeToFile(String value, String folder, String file) throws IOException {
+    static boolean writeToFile(String value, String folder, String file) throws IOException {
         final File fo = new File(folder);
         if (!fo.exists() && !fo.mkdirs()) {
             throw new IOException("Can not create Folder '" + folder + "'!");
@@ -51,7 +51,7 @@ public interface IO {
         return true;
     }
 
-    public static String readResourceContent(String resource) throws IllegalArgumentException {
+    static String readResourceContent(String resource) throws IllegalArgumentException {
         final InputStream in = IO.class.getClassLoader().getResourceAsStream(resource);
         if (in == null) throw new IllegalArgumentException("The Resource '" + resource + "' does not exist!");
 
@@ -62,7 +62,7 @@ public interface IO {
         }
     }
 
-    public static List<String> listResources(String folder) throws IllegalArgumentException {
+    static List<String> listResources(String folder) throws IllegalArgumentException {
         final InputStream in = IO.class.getClassLoader().getResourceAsStream(folder);
         if (in == null) throw new IllegalArgumentException("The ResourceFolder '" + folder + "' does not exists!");
 
@@ -80,7 +80,7 @@ public interface IO {
         return resources;
     }
 
-    public static String readURLContent(String link) throws IOException {
+    static String readURLContent(String link) throws IOException {
         URL url = new URL(link);
         InputStream in = null;
 

@@ -1,5 +1,5 @@
 package net.reindiegames.re2d.core.level;
 
-public interface Level {
-    public abstract ChunkBase getChunkBase();
+public interface Level extends ChunkGenerator {
+    ChunkBase getChunkBase();
 }

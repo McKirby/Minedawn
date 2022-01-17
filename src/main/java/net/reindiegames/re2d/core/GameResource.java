@@ -7,6 +7,7 @@ import net.reindiegames.re2d.core.level.TileType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public abstract class GameResource implements JsonResourceIO {
@@ -44,6 +45,16 @@ public abstract class GameResource implements JsonResourceIO {
                 final GameResource type = (GameResource) constructor.newInstance(resource);
                 type.loadFromResource();
             }
+        } catch (ReflectiveOperationException e) {
+            Log.error("The GameResource Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
+            e.printStackTrace();
+            return false;
+        }
+
+        try {
+            final Method linkMethod = resourceImpl.getDeclaredMethod("link");
+            linkMethod.setAccessible(true);
+            linkMethod.invoke(null);
         } catch (ReflectiveOperationException e) {
             Log.error("The GameResource Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
             e.printStackTrace();

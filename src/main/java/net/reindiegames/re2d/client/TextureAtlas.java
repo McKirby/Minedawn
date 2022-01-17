@@ -21,7 +21,7 @@ enum TextureAtlas {
 
     protected int textureId;
 
-    private TextureAtlas(String resource, int columns, int rows, int spriteWidth, int spriteHeight) {
+    TextureAtlas(String resource, int columns, int rows, int spriteWidth, int spriteHeight) {
         this.resource = resource;
         this.columns = columns;
         this.rows = rows;
@@ -68,7 +68,7 @@ enum TextureAtlas {
     }
 
     protected static void dispose() {
-        for(TextureAtlas atlas : TextureAtlas.values()) {
+        for (TextureAtlas atlas : TextureAtlas.values()) {
             GL11.glDeleteTextures(atlas.textureId);
         }
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);

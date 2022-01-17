@@ -5,21 +5,21 @@ import com.google.gson.JsonObject;
 import java.io.IOException;
 
 public interface JsonFileIO extends JsonIO {
-    public static boolean saveObjectToFile(JsonObject o, String folder, String file, boolean p) throws IOException {
+    static boolean saveObjectToFile(JsonObject o, String folder, String file, boolean p) throws IOException {
         return IO.writeToFile(p ? FANCY_GSON.toJson(o) : GSON.toJson(o), folder, file);
     }
 
-    public static JsonObject loadObjectFromFile(String folder, String file) throws IOException {
+    static JsonObject loadObjectFromFile(String folder, String file) throws IOException {
         return PARSER.parse(IO.readFileContent(folder, file)).getAsJsonObject();
     }
 
-    public abstract JsonObject save();
+    JsonObject save();
 
-    public default boolean saveToFile(String folder, String file, boolean p) throws IOException {
+    default boolean saveToFile(String folder, String file, boolean p) throws IOException {
         return JsonFileIO.saveObjectToFile(this.save(), folder, file, p);
     }
 
-    public default void loadFromFile(String folder, String file) throws IOException {
+    default void loadFromFile(String folder, String file) throws IOException {
         this.load(JsonFileIO.loadObjectFromFile(folder, file));
     }
 }

@@ -16,6 +16,11 @@ public class ResourceLevel extends GameResource implements Level {
         super(resourceName);
         this.chunkBase = new ChunkBase(this);
         LEVEL.put(id, this);
+
+        this.getChunkBase().getChunk(0, 0, true);
+    }
+
+    private static void link() {
     }
 
     @Override
@@ -30,5 +35,10 @@ public class ResourceLevel extends GameResource implements Level {
     @Override
     public ChunkBase getChunkBase() {
         return chunkBase;
+    }
+
+    @Override
+    public Chunk loadChunk(int cx, int cy) {
+        return new Chunk(this, cx, cy);
     }
 }

@@ -17,7 +17,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader> {
     private final IntBuffer heightBuffer;
     private final IntBuffer widthBuffer;
 
-    private SpriteMesh mesh;
+    private final SpriteMesh mesh;
 
     protected TerrainRenderStage() {
         super(new TerrainShader());

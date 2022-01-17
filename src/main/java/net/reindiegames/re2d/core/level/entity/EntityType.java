@@ -15,6 +15,9 @@ public class EntityType extends GameResource {
         ENTITY_TYPES.put(id, this);
     }
 
+    private static void link() {
+    }
+
     @Override
     public void load(JsonObject source) {
     }

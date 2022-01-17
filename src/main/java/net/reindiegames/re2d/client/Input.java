@@ -20,7 +20,7 @@ enum Input {
     private boolean pressed;
     private KeyAction action;
 
-    private Input(int keyCode) {
+    Input(int keyCode) {
         this.keyCode = keyCode;
     }
 

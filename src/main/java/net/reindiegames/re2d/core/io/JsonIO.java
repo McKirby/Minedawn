@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public interface JsonIO extends IO {
-    public static final Gson GSON = new GsonBuilder().create();
-    public static final Gson FANCY_GSON = new GsonBuilder().setPrettyPrinting().create();
-    public static final JsonParser PARSER = new JsonParser();
+    Gson GSON = new GsonBuilder().create();
+    Gson FANCY_GSON = new GsonBuilder().setPrettyPrinting().create();
+    JsonParser PARSER = new JsonParser();
 
-    public abstract void load(JsonObject source);
+    void load(JsonObject source);
 }
