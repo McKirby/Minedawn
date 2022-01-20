@@ -31,7 +31,7 @@ public abstract class GameResource implements JsonResourceIO {
             pathField.setAccessible(true);
             path = (String) pathField.get(null);
         } catch (ReflectiveOperationException e) {
-            Log.error("The GameResource Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
+            Log.error("The GameResource Path-Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
             e.printStackTrace();
             return false;
         }
@@ -46,7 +46,7 @@ public abstract class GameResource implements JsonResourceIO {
                 type.loadFromResource();
             }
         } catch (ReflectiveOperationException e) {
-            Log.error("The GameResource Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
+            Log.error("The GameResource Load-Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
             e.printStackTrace();
             return false;
         }
@@ -56,7 +56,7 @@ public abstract class GameResource implements JsonResourceIO {
             linkMethod.setAccessible(true);
             linkMethod.invoke(null);
         } catch (ReflectiveOperationException e) {
-            Log.error("The GameResource Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
+            Log.error("The GameResource Link-Implementation '" + resourceImpl.getSimpleName() + "' is corrupt!");
             e.printStackTrace();
             return false;
         }
@@ -65,8 +65,8 @@ public abstract class GameResource implements JsonResourceIO {
     }
 
     @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "{Resource = '" + resourceName + "', ID = " + id + "}";
+    public int hashCode() {
+        return id;
     }
 
     @Override
@@ -76,7 +76,7 @@ public abstract class GameResource implements JsonResourceIO {
     }
 
     @Override
-    public int hashCode() {
-        return id;
+    public String toString() {
+        return this.getClass().getSimpleName() + "{Resource = '" + resourceName + "', ID = " + id + "}";
     }
 }

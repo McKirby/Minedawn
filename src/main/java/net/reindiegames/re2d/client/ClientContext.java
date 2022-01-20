@@ -24,9 +24,10 @@ public class ClientContext extends GameContext {
     protected static ClientContext runningContext = null;
 
     protected static LevelRenderPipeline levelRenderPipeline;
-    protected static long window;
+    protected static long window = -1;
     protected static float ctx;
     protected static float cty;
+    protected static float speed = 0.2f;
     protected static ResourceLevel currentLevel;
 
     private ClientContext() {
@@ -35,9 +36,6 @@ public class ClientContext extends GameContext {
     @Initializer
     private static final void initialize() {
         if (runningContext != null) throw new IllegalStateException("There is already a ClientContext Running!");
-
-        Log.info("Bridging the Client to the Core...");
-        ClientCoreBridge.bridge();
 
         Log.info("Creating OpenGL Context...");
         GLFWErrorCallback.createPrint(System.err).set();
@@ -92,20 +90,28 @@ public class ClientContext extends GameContext {
         levelRenderPipeline = new LevelRenderPipeline();
         ctx = 0.0f;
         cty = 0.0f;
+
+        Log.info("Bridging the Client to the Core...");
+        if (!ClientCoreBridge.bridge()) throw new IllegalStateException("Could not Bridge between Core and Client!");
+
+        Log.info("Loading Level...");
+        currentLevel = ResourceLevel.TEST_LEVEL;
     }
 
     @Disposer
     private static final void dispose() {
-        Log.info("Disposing Assets...");
-        Shader.dispose();
-        TextureAtlas.dispose();
-        SpriteMesh.dispose();
+        if (window != -1) {
+            Log.info("Disposing Assets...");
+            Shader.dispose();
+            TextureAtlas.dispose();
+            SpriteMesh.dispose();
 
-        Log.info("Disposing the OpenGL-Context...");
-        Callbacks.glfwFreeCallbacks(window);
-        GLFW.glfwDestroyWindow(window);
-        GLFW.glfwTerminate();
-        GLFW.glfwSetErrorCallback(null).free();
+            Log.info("Disposing the OpenGL-Context...");
+            Callbacks.glfwFreeCallbacks(window);
+            GLFW.glfwDestroyWindow(window);
+            GLFW.glfwTerminate();
+            GLFW.glfwSetErrorCallback(null).free();
+        }
     }
 
     @Override
@@ -115,6 +121,11 @@ public class ClientContext extends GameContext {
     @Override
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
+        if (Input.MOVE_NORTH.isPressed()) cty += speed;
+        if (Input.MOVE_SOUTH.isPressed()) cty -= speed;
+        if (Input.MOVE_EAST.isPressed()) ctx += speed;
+        if (Input.MOVE_WEST.isPressed()) ctx -= speed;
+
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);
     }

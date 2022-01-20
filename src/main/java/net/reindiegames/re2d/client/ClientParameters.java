@@ -10,7 +10,7 @@ final class ClientParameters {
     protected static final Vector4f clearColor = new Vector4f(0.2f, 0.2f, 0.2f, 1.0f);
 
     protected static final int DEFAULT_TILE_PIXEL_SIZE = 64;
-    protected static int tilePixelSize = DEFAULT_TILE_PIXEL_SIZE;
+    protected static int tileScale = DEFAULT_TILE_PIXEL_SIZE;
 
     private ClientParameters() {
     }

@@ -1,5 +1,8 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.level.Chunk;
+import net.reindiegames.re2d.core.level.CoordinateSystems;
+import net.reindiegames.re2d.core.level.Level;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -10,28 +13,24 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.IntBuffer;
 
 import static net.reindiegames.re2d.client.ClientParameters.clearColor;
-import static net.reindiegames.re2d.client.ClientParameters.tilePixelSize;
+import static net.reindiegames.re2d.client.ClientParameters.tileScale;
 import static net.reindiegames.re2d.core.CoreParameters.debug;
 
-class TerrainRenderStage extends RenderStage<TerrainShader> {
+class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     private final IntBuffer heightBuffer;
     private final IntBuffer widthBuffer;
-
-    private final SpriteMesh mesh;
 
     protected TerrainRenderStage() {
         super(new TerrainShader());
         this.widthBuffer = MemoryUtil.memAllocInt(1);
         this.heightBuffer = MemoryUtil.memAllocInt(1);
-
-        this.mesh = SpriteMesh.create("test", TextureAtlas.TERRAIN.getTextureCoords(0, 0));
     }
 
     @Override
     protected void load() {
     }
 
-    protected void prepare(long window, float cty, float ctx) {
+    protected void prepare(long window, float ctx, float cty) {
         GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer);
         int width = widthBuffer.get(0);
         int height = heightBuffer.get(0);
@@ -50,21 +49,37 @@ class TerrainRenderStage extends RenderStage<TerrainShader> {
         shader.bind();
         shader.loadProjectionView(ctx, cty, width, height);
         shader.loadTextureBank(0);
-        TextureAtlas.TERRAIN.bind(0);
     }
 
     @Override
-    protected void process(long totalTicks) {
-        GL30.glBindVertexArray(mesh.vao);
-        shader.loadTransformation(new Vector2f(0.0f, 0.0f), 0.0f, new Vector2f(tilePixelSize, tilePixelSize));
+    protected void process(long totalTicks, Level level) {
+        level.getChunkBase().forEachLoadedChunk((chunk -> {
+            int tileId;
+            short variant;
+            for (byte rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
+                for (byte ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
+                    tileId = chunk.tiles[0][rx][ry];
+                    variant = chunk.variants[0][rx][ry];
 
-        if (debug) {
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
-            GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
-        } else {
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
-            GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
-        }
+                    final SpriteMesh mesh = ClientCoreBridge.TILE_SPRITE_MAP.get(tileId).get(variant)[0];
+                    ClientCoreBridge.TILE_ATLAS_MAP.get(tileId).bind(0);
+
+                    GL30.glBindVertexArray(mesh.vao);
+
+                    final Vector2f tileLevelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
+                    tileLevelPos.mul(tileScale);
+                    shader.loadTransformation(tileLevelPos, 0.0f, new Vector2f(tileScale, tileScale));
+
+                    if (debug) {
+                        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
+                        GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
+                    } else {
+                        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
+                        GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
+                    }
+                }
+            }
+        }));
     }
 
     @Override

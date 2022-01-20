@@ -7,7 +7,11 @@ public interface JsonResourceIO extends JsonIO, Resource {
         return PARSER.parse(IO.readResourceContent(resource)).getAsJsonObject();
     }
 
+    default JsonObject loadResourceObject() throws IllegalArgumentException {
+        return JsonResourceIO.loadObjectFromResource(this.getResourcePath());
+    }
+
     default void loadFromResource() throws IllegalArgumentException {
-        this.load(JsonResourceIO.loadObjectFromResource(this.getResourcePath()));
+        this.load(this.loadResourceObject());
     }
 }

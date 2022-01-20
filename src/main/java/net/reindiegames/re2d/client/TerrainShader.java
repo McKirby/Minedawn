@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import static net.reindiegames.re2d.client.ClientParameters.tilePixelSize;
+import static net.reindiegames.re2d.client.ClientParameters.tileScale;
 
 class TerrainShader extends Shader {
     protected static final String VERTEX_FILE = "net/reindiegames/re2d/client/terrain.vert";
@@ -42,7 +42,7 @@ class TerrainShader extends Shader {
         super.loadMatrix4f(projectionLocation, projection);
 
         final Matrix4f view = new Matrix4f();
-        view.translate(width / 2.0f + ctx * tilePixelSize, height / 2.0f + cty * tilePixelSize, 0.0f);
+        view.translate(width / 2.0f + -ctx * tileScale, height / 2.0f + -cty * tileScale, 0.0f);
         super.loadMatrix4f(viewLocation, view);
     }
 

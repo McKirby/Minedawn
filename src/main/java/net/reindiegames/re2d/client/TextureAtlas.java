@@ -11,22 +11,20 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 enum TextureAtlas {
-    TERRAIN("sprites/terrain.png", 32, 32, 32, 32);
+    TERRAIN_01("sprites/terrain.png", 32, 32);
+
+    protected static final int SPRITE_PIXEL_SIZE = 32;
 
     protected final String resource;
     protected final int columns;
     protected final int rows;
-    protected final int spriteWidth;
-    protected final int spriteHeight;
 
     protected int textureId;
 
-    TextureAtlas(String resource, int columns, int rows, int spriteWidth, int spriteHeight) {
+    TextureAtlas(String resource, int columns, int rows) {
         this.resource = resource;
         this.columns = columns;
         this.rows = rows;
-        this.spriteWidth = spriteWidth;
-        this.spriteHeight = spriteHeight;
     }
 
     protected static boolean setup() {
