@@ -68,7 +68,7 @@ enum Input {
                 float y = (float) yBuffer.get();
 
                 for (MouseAction mouseAction : mouseActions) {
-                    mouseAction.onMouseAction(action == GLFW.GLFW_PRESS, x, y);
+                    mouseAction.onMouseAction(button, action == GLFW.GLFW_PRESS, x, y);
                 }
             }
         });
@@ -105,6 +105,6 @@ enum Input {
     }
 
     interface MouseAction {
-        void onMouseAction(boolean pressed, float x, float y);
+        void onMouseAction(int button, boolean pressed, float x, float y);
     }
 }

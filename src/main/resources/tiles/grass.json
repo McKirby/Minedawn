@@ -4,8 +4,7 @@
     "name": "Grass"
   },
   "core": {
-    "tiling": 1,
-    "default_variant": 11
+    "tiling": 1
   },
   "client": {
     "atlas": "TERRAIN_01",

@@ -2,14 +2,11 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
-import net.reindiegames.re2d.core.level.Chunk;
-import net.reindiegames.re2d.core.level.CoordinateSystems;
 import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -88,17 +85,10 @@ public class ClientContext extends GameContext {
                 debug = !debug;
             }
         }));
-        Input.addMouseAction(((pressed, x, y) -> {
+        Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
-
             final Vector2f levelPos = Input.getLevelPosition(x, y);
-            final Vector2i chunkPos = CoordinateSystems.levelToChunk(levelPos);
-
-            final Chunk chunk = currentLevel.getChunkBase().getChunk(chunkPos.x, chunkPos.y, true, true);
-            final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
-            chunk.tiles[relative.x][relative.y] = TileType.WATER.id;
-            chunk.variants[relative.x][relative.y] = TileType.WATER.getDefaultVariant();
-            chunk.changed = true;
+            currentLevel.setTileType(levelPos, button == GLFW.GLFW_MOUSE_BUTTON_1 ? TileType.WATER : TileType.GRASS);
         }));
 
         Log.info("Loading Assets..");

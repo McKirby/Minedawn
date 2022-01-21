@@ -16,6 +16,7 @@ public class TileType extends GameResource {
     public static final int NO_TILING = 0;
     public static final int COMPLETE_TILING = 1;
     public static final short[] TILING_VARIANTS = new short[2];
+    public static final short[] DEFAULT_VARIANT = new short[2];
 
     private static final Map<Integer, TileType> ID_TILE_MAP = new HashMap<>();
     private static final Map<String, TileType> RESOURCE_TILE_MAP = new HashMap<>();
@@ -23,6 +24,9 @@ public class TileType extends GameResource {
     static {
         TILING_VARIANTS[NO_TILING] = 1;
         TILING_VARIANTS[COMPLETE_TILING] = 30;
+
+        DEFAULT_VARIANT[NO_TILING] = 0;
+        DEFAULT_VARIANT[COMPLETE_TILING] = 11;
     }
 
     protected int tiling;
@@ -63,7 +67,7 @@ public class TileType extends GameResource {
     public void load(JsonObject source) {
         final JsonObject core = source.get("core").getAsJsonObject();
         this.tiling = core.get("tiling").getAsInt();
-        this.defaultVariant = core.get("default_variant").getAsShort();
+        this.defaultVariant = DEFAULT_VARIANT[tiling];
     }
 
     @Override
