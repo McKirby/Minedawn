@@ -5,6 +5,7 @@ import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.CoordinateSystems;
 import net.reindiegames.re2d.core.level.ResourceLevel;
+import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -95,7 +96,8 @@ public class ClientContext extends GameContext {
 
             final Chunk chunk = currentLevel.getChunkBase().getChunk(chunkPos.x, chunkPos.y, true, true);
             final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
-            chunk.tiles[relative.x][relative.y] = 0;
+            chunk.tiles[relative.x][relative.y] = TileType.WATER.id;
+            chunk.variants[relative.x][relative.y] = TileType.WATER.getDefaultVariant();
             chunk.changed = true;
         }));
 

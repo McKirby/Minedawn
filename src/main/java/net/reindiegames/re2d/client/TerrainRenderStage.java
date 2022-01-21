@@ -53,15 +53,18 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     @Override
     protected void process(long totalTicks, Level level) {
         level.getChunkBase().forEachLoadedChunk((chunk -> {
-            Map<Integer, Mesh> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
-            Mesh mesh = xMap.getOrDefault(chunk.cy, null);
-            if (chunk.changed || mesh == null) {
-                if (mesh != null) {
-                    mesh.delete();
+            Map<Integer, Mesh[]> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
+            Mesh[] meshes = xMap.getOrDefault(chunk.cy, null);
+            if (chunk.changed || meshes == null) {
+                if (meshes != null) {
+                    for (int i = 0; i < meshes.length; i++) {
+                        meshes[i].delete();
+                    }
                 }
-                mesh = ClientCoreBridge.generateTerrainMesh(chunk);
-                xMap.put(chunk.cy, mesh);
+                meshes = ClientCoreBridge.generateTerrainMesh(chunk);
+                xMap.put(chunk.cy, meshes);
             }
+            Mesh mesh = meshes[(int) (totalTicks % meshes.length)];
             GL30.glBindVertexArray(mesh.vao);
 
             if (chunk.changed || tileScaleChanged) {

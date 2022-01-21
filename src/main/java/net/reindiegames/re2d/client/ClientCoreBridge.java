@@ -3,6 +3,7 @@ package net.reindiegames.re2d.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.TileType;
@@ -17,8 +18,8 @@ import static net.reindiegames.re2d.client.Mesh.*;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 public class ClientCoreBridge {
-    protected static final int[] TILING_WIDTH = new int[2];
     protected static final Map<Integer, Map<Short, Mesh[]>> TILE_SPRITE_MAP = new HashMap<>();
+    protected static final Map<Integer, Map<Short, AnimationParameters>> TILE_ANIMATION_MAP = new HashMap<>();
     protected static final Map<Integer, TextureAtlas> TILE_ATLAS_MAP = new HashMap<>();
 
     protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE;
@@ -26,18 +27,13 @@ public class ClientCoreBridge {
     protected static final FloatBuffer textureBuffer;
     protected static final IntBuffer triangleBuffer;
     protected static final IntBuffer lineBuffer;
+    protected static final Map<Integer, Map<Integer, Mesh[]>> CHUNK_MESH_MAP = new HashMap<>();
+
     static {
         vertexBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
         textureBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
         triangleBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_TRIANGLE_INDICES.length);
         lineBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_LINE_INDICES.length);
-    }
-
-    protected static final Map<Integer, Map<Integer, Mesh>> CHUNK_MESH_MAP = new HashMap<>();
-
-    static {
-        TILING_WIDTH[TileType.NO_TILING] = 1;
-        TILING_WIDTH[TileType.COMPLETE_TILING] = 10;
     }
 
     public static boolean bridge() {
@@ -58,16 +54,21 @@ public class ClientCoreBridge {
                     throw new IllegalArgumentException("The Sprite-Count does not match the Tiling!");
                 }
 
-                final Map<Short, Mesh[]> variantMap = new HashMap<>();
+                final Map<Short, Mesh[]> variantMeshMap = new HashMap<>();
+                final Map<Short, AnimationParameters> variantAnimationTicksMap = new HashMap<>();
                 for (short variant = 0; variant < spriteArray.size(); variant++) {
                     final JsonElement element = spriteArray.get(variant);
 
                     Mesh[] meshes;
+                    int animationFrames, animationTicks;
                     int spriteIndex, column, row;
                     float[] texCoords;
 
                     if (element.isJsonPrimitive()) {
                         meshes = new Mesh[1];
+                        animationFrames = 1;
+                        animationTicks = 1;
+
                         spriteIndex = element.getAsInt();
 
                         column = spriteIndex % atlas.columns;
@@ -77,21 +78,26 @@ public class ClientCoreBridge {
                         meshes[0] = Mesh.create("sprite_tile_" + type.name + "_0", texCoords);
                     } else {
                         final JsonArray subSpriteArray = spriteArray.get(variant).getAsJsonArray();
-                        meshes = new Mesh[subSpriteArray.size()];
+                        meshes = new Mesh[subSpriteArray.size() - 1];
 
-                        for (int i = 0; i < subSpriteArray.size(); i++) {
+                        animationTicks = (int) (CoreParameters.TICK_RATE * subSpriteArray.get(0).getAsFloat());
+                        animationFrames = meshes.length;
+
+                        for (int i = 1; i < subSpriteArray.size(); i++) {
                             spriteIndex = subSpriteArray.get(i).getAsInt();
 
                             column = spriteIndex % atlas.columns;
                             row = spriteIndex / atlas.columns;
                             texCoords = atlas.getTextureCoords(column, row);
 
-                            meshes[i] = Mesh.create("sprite_tile_" + type.name + "_" + i, texCoords);
+                            meshes[i - 1] = Mesh.create("sprite_tile_" + type.name + "_" + i, texCoords);
                         }
                     }
-                    variantMap.put(variant, meshes);
+                    variantMeshMap.put(variant, meshes);
+                    variantAnimationTicksMap.put(variant, new AnimationParameters(animationFrames, animationTicks));
                 }
-                TILE_SPRITE_MAP.put(type.id, variantMap);
+                TILE_SPRITE_MAP.put(type.id, variantMeshMap);
+                TILE_ANIMATION_MAP.put(type.id, variantAnimationTicksMap);
             } catch (IllegalArgumentException e) {
                 Log.error("Could not bridge to Tile '" + type.name + "'(" + e.getMessage() + ")!");
                 return false;
@@ -101,24 +107,53 @@ public class ClientCoreBridge {
         return true;
     }
 
-    protected synchronized static Mesh generateTerrainMesh(Chunk chunk) {
+    protected synchronized static Mesh[] generateTerrainMesh(Chunk c) {
         long start = System.currentTimeMillis();
+        int maxAnimationDuration = 1;
+        int animationDuration;
 
+        AnimationParameters parameters;
+        for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
+            for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
+                animationDuration = TILE_ANIMATION_MAP.get(c.tiles[rx][ry]).get(c.variants[rx][ry]).duration;
+                if (animationDuration > maxAnimationDuration) {
+                    maxAnimationDuration = animationDuration;
+                }
+            }
+        }
+
+        final Mesh[] meshes = new Mesh[maxAnimationDuration];
+        for (int i = 0; i < meshes.length; i++) {
+            meshes[i] = ClientCoreBridge.generateTickTerrainMesh(i, c);
+        }
+
+        final long delta = System.currentTimeMillis() - start;
+        Log.debug("Generated Chunk-Mesh (" + meshes.length + ", " + c.cx + ", " + c.cy + ") in " + delta + "ms!");
+
+        return meshes;
+    }
+
+    private static Mesh generateTickTerrainMesh(int tick, Chunk chunk) {
         vertexBuffer.clear();
         textureBuffer.clear();
         triangleBuffer.clear();
         lineBuffer.clear();
 
         int offset = 0;
+
         int id;
         short variant;
+        AnimationParameters params;
+
         Mesh tileMesh;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                 id = chunk.tiles[rx][ry];
                 if (id == 0) continue;
                 variant = chunk.variants[rx][ry];
-                tileMesh = TILE_SPRITE_MAP.get(id).get(variant)[0];
+                params = TILE_ANIMATION_MAP.get(id).get(variant);
+
+                tileMesh = TILE_SPRITE_MAP.get(id).get(variant)[(tick / params.ticks) % params.frames];
 
                 for (int i = 0; i < tileMesh.vertices.length; i += 2) {
                     vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
@@ -154,9 +189,19 @@ public class ClientCoreBridge {
         lineBuffer.get(lineIndices, 0, lineIndices.length);
 
         final Mesh mesh = new Mesh("chunk_" + chunk.cx + "_" + chunk.cy, v, t, triangleIndices, lineIndices);
-        long delta = System.currentTimeMillis() - start;
-        Log.debug("Generated Chunk-Mesh '" + mesh.name + "' in " + delta + "ms!");
 
         return mesh;
+    }
+
+    static class AnimationParameters {
+        protected final int frames;
+        protected final int ticks;
+        protected final int duration;
+
+        protected AnimationParameters(int frames, int ticks) {
+            this.frames = frames;
+            this.ticks = ticks;
+            this.duration = frames * ticks;
+        }
     }
 }

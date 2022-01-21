@@ -24,6 +24,7 @@ public class Chunk extends Transformable {
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                 tiles[rx][ry] = TileType.GRASS.id;
+
                 variants[rx][ry] = TileType.GRASS.defaultVariant;
             }
         }

@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "id": 2,
+    "name": "Water"
+  },
+  "core": {
+    "tiling": 0,
+    "default_variant": 0
+  },
+  "client": {
+    "atlas": "TERRAIN_01",
+    "sprites": [
+      [0.1, 96, 97, 98, 99, 100, 101, 102, 103]
+    ]
+  },
+  "server": {
+  }
+}
