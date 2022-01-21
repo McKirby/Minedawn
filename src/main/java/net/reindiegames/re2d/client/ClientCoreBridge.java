@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.TileType;
-import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -20,6 +20,18 @@ public class ClientCoreBridge {
     protected static final int[] TILING_WIDTH = new int[2];
     protected static final Map<Integer, Map<Short, Mesh[]>> TILE_SPRITE_MAP = new HashMap<>();
     protected static final Map<Integer, TextureAtlas> TILE_ATLAS_MAP = new HashMap<>();
+
+    protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE;
+    protected static final FloatBuffer vertexBuffer;
+    protected static final FloatBuffer textureBuffer;
+    protected static final IntBuffer triangleBuffer;
+    protected static final IntBuffer lineBuffer;
+    static {
+        vertexBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
+        textureBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
+        triangleBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_TRIANGLE_INDICES.length);
+        lineBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_LINE_INDICES.length);
+    }
 
     protected static final Map<Integer, Map<Integer, Mesh>> CHUNK_MESH_MAP = new HashMap<>();
 
@@ -89,17 +101,15 @@ public class ClientCoreBridge {
         return true;
     }
 
-    protected static Mesh generateTerrainMesh(Chunk chunk) {
+    protected synchronized static Mesh generateTerrainMesh(Chunk chunk) {
         long start = System.currentTimeMillis();
-        final int tilesPerChunk = CHUNK_SIZE * CHUNK_SIZE;
 
-        final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(tilesPerChunk * SPRITE_VERTICES.length);
-        final FloatBuffer textureBuffer = BufferUtils.createFloatBuffer(tilesPerChunk * SPRITE_VERTICES.length);
-        final IntBuffer triangleBuffer = BufferUtils.createIntBuffer(tilesPerChunk * SPRITE_TRIANGLE_INDICES.length);
-        final IntBuffer lineBuffer = BufferUtils.createIntBuffer(tilesPerChunk * SPRITE_LINE_INDICES.length);
+        vertexBuffer.clear();
+        textureBuffer.clear();
+        triangleBuffer.clear();
+        lineBuffer.clear();
 
         int offset = 0;
-
         int id;
         short variant;
         Mesh tileMesh;

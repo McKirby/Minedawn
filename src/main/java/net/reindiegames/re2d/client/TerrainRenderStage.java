@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.reindiegames.re2d.client.ClientCoreBridge.CHUNK_MESH_MAP;
-import static net.reindiegames.re2d.client.ClientParameters.clearColor;
+import static net.reindiegames.re2d.client.ClientParameters.*;
 import static net.reindiegames.re2d.core.CoreParameters.debug;
 
 class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
@@ -31,9 +31,9 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
 
     protected void prepare(long window, float ctx, float cty) {
         GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer);
-        int width = widthBuffer.get(0);
-        int height = heightBuffer.get(0);
-        GL11.glViewport(0, 0, width, height);
+        windowWidth = widthBuffer.get(0);
+        windowHeight = heightBuffer.get(0);
+        GL11.glViewport(0, 0, windowWidth, windowHeight);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_CULL_FACE);
@@ -46,7 +46,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         shader.bind();
-        shader.loadProjectionView(ctx, cty, width, height);
+        shader.loadProjectionView(ctx, cty, windowWidth, windowHeight);
         shader.loadTextureBank(0);
     }
 
@@ -55,17 +55,21 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
         level.getChunkBase().forEachLoadedChunk((chunk -> {
             Map<Integer, Mesh> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
             Mesh mesh = xMap.getOrDefault(chunk.cy, null);
-            if (mesh == null) {
+            if (chunk.changed || mesh == null) {
+                if (mesh != null) {
+                    mesh.delete();
+                }
                 mesh = ClientCoreBridge.generateTerrainMesh(chunk);
                 xMap.put(chunk.cy, mesh);
             }
             GL30.glBindVertexArray(mesh.vao);
 
-            if (chunk.changed) {
+            if (chunk.changed || tileScaleChanged) {
                 Shader.generateTransformation(chunk.transformation, chunk.pos, chunk.size, chunk.rotation);
-                chunk.changed = false;
             }
+
             shader.loadTransformation(chunk.transformation);
+            chunk.changed = false;
 
             if (debug) {
                 GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);

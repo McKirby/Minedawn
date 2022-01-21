@@ -10,15 +10,15 @@ public final class CoordinateSystems {
     public static Vector2i levelToChunk(Vector2f levelPos) {
         final Vector2i vec = new Vector2i();
         if (levelPos.x >= 0) {
-            vec.x = ((int) levelPos.x) / Chunk.CHUNK_SIZE;
+            vec.x = ((int) Math.floor(levelPos.x)) / Chunk.CHUNK_SIZE;
         } else {
-            vec.x = (((int) levelPos.x + 1) / Chunk.CHUNK_SIZE) - 1;
+            vec.x = (((int) Math.floor(levelPos.x + 1)) / Chunk.CHUNK_SIZE) - 1;
         }
 
         if (levelPos.y >= 0) {
-            vec.y = ((int) levelPos.y) / Chunk.CHUNK_SIZE;
+            vec.y = ((int) Math.floor(levelPos.y)) / Chunk.CHUNK_SIZE;
         } else {
-            vec.y = (((int) levelPos.y + 1) / Chunk.CHUNK_SIZE) - 1;
+            vec.y = (((int) Math.floor(levelPos.y + 1)) / Chunk.CHUNK_SIZE) - 1;
         }
         return vec;
     }

@@ -12,10 +12,10 @@ import java.util.Set;
 
 class Mesh {
     protected static final float[] SPRITE_VERTICES = {
-            -0.5f, 0.5f,
-            0.5f, 0.5f,
-            -0.5f, -0.5f,
-            0.5f, -0.5f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
+            0.0f, 0.0f,
+            1.0f, 0.0f,
     };
     protected static final int[] SPRITE_TRIANGLE_INDICES = {
             0, 2, 1,
@@ -109,5 +109,21 @@ class Mesh {
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
         return vbo;
+    }
+
+    protected void delete() {
+        GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+        GL30.glDeleteBuffers(vertexVbo);
+        GL30.glDeleteBuffers(textureCoordinateVbo);
+        GL30.glDeleteBuffers(triangleIndicesVbo);
+        GL30.glDeleteBuffers(lineIndicesVbo);
+        createdVbos.remove(vertexVbo);
+        createdVbos.remove(textureCoordinateVbo);
+        createdVbos.remove(triangleIndicesVbo);
+        createdVbos.remove(lineIndicesVbo);
+
+        GL30.glBindVertexArray(0);
+        GL30.glDeleteVertexArrays(vao);
+        createdVaos.remove(vao);
     }
 }

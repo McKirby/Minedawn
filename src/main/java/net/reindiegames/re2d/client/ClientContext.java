@@ -2,9 +2,13 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.level.Chunk;
+import net.reindiegames.re2d.core.level.CoordinateSystems;
 import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -14,8 +18,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
-import static net.reindiegames.re2d.client.ClientParameters.DEFAULT_HEIGHT;
-import static net.reindiegames.re2d.client.ClientParameters.DEFAULT_WIDTH;
+import static net.reindiegames.re2d.client.ClientParameters.*;
 import static net.reindiegames.re2d.core.CoreParameters.TITLE;
 import static net.reindiegames.re2d.core.CoreParameters.debug;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -57,10 +60,12 @@ public class ClientContext extends GameContext {
             IntBuffer pHeight = stack.mallocInt(1);
 
             GLFW.glfwGetWindowSize(window, pWidth, pHeight);
+            ClientParameters.windowWidth = pWidth.get();
+            ClientParameters.windowHeight = pHeight.get();
 
             GLFWVidMode vidmode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
-            int centerX = (vidmode.width() - pWidth.get(0)) / 2;
-            int centerY = (vidmode.height() - pHeight.get(0)) / 2;
+            int centerX = (vidmode.width() - ClientParameters.windowWidth) / 2;
+            int centerY = (vidmode.height() - ClientParameters.windowHeight) / 2;
             GLFW.glfwSetWindowPos(window, centerX, centerY);
         }
 
@@ -81,6 +86,17 @@ public class ClientContext extends GameContext {
             if (pressed) {
                 debug = !debug;
             }
+        }));
+        Input.addMouseAction(((pressed, x, y) -> {
+            if (!pressed) return;
+
+            final Vector2f levelPos = Input.getLevelPosition(x, y);
+            final Vector2i chunkPos = CoordinateSystems.levelToChunk(levelPos);
+
+            final Chunk chunk = currentLevel.getChunkBase().getChunk(chunkPos.x, chunkPos.y, true, true);
+            final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
+            chunk.tiles[relative.x][relative.y] = 0;
+            chunk.changed = true;
         }));
 
         Log.info("Loading Assets..");
@@ -125,6 +141,16 @@ public class ClientContext extends GameContext {
         if (Input.MOVE_SOUTH.isPressed()) cty -= speed * delta;
         if (Input.MOVE_EAST.isPressed()) ctx += speed * delta;
         if (Input.MOVE_WEST.isPressed()) ctx -= speed * delta;
+
+        if (Input.ZOOM_IN.isPressed()) {
+            tileScale = Math.max(Math.min(tileScale - 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
+            tileScaleChanged = true;
+        }
+
+        if (Input.ZOOM_OUT.isPressed()) {
+            tileScale = Math.max(Math.min(tileScale + 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
+            tileScaleChanged = true;
+        }
 
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);

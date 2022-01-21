@@ -66,6 +66,25 @@ public class CoordinateSystemTest {
             Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos4).y, 0);
         }
 
+        {
+            final Vector2f levelPos1 = new Vector2f(0.0f, -16.1f);
+            final Vector2f levelPos2 = new Vector2f(0.0f, -16.0f);
+            final Vector2f levelPos3 = new Vector2f(0.0f, 16.0f);
+            final Vector2f levelPos4 = new Vector2f(0.0f, 15.9f);
+
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos1).x, 0);
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos1).y, -2);
+
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos2).x, 0);
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos2).y, -1);
+
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos3).x, 0);
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos3).y, 1);
+
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos4).x, 0);
+            Assert.assertEquals(CoordinateSystems.levelToChunk(levelPos4).y, 0);
+        }
+
         final Random random = new Random();
         for (int i = 0; i < 1000 * 1000; i++) {
             final Vector2f levelPos = new Vector2f();
