@@ -10,10 +10,26 @@ import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-class SpriteMesh {
+class Mesh {
+    protected static final float[] SPRITE_VERTICES = {
+            -0.5f, 0.5f,
+            0.5f, 0.5f,
+            -0.5f, -0.5f,
+            0.5f, -0.5f,
+    };
+    protected static final int[] SPRITE_TRIANGLE_INDICES = {
+            0, 2, 1,
+            1, 2, 3,
+    };
+    protected static final int[] SPRITE_LINE_INDICES = {
+            0, 2,
+            2, 3,
+            3, 1,
+            1, 0,
+    };
+
     private static final Set<Integer> createdVaos = new HashSet<>();
     private static final Set<Integer> createdVbos = new HashSet<>();
-
     protected final int vao;
     protected final int vertexVbo;
     protected final int textureCoordinateVbo;
@@ -26,7 +42,7 @@ class SpriteMesh {
     protected final int[] triangleIndices;
     protected final int[] lineIndices;
 
-    protected SpriteMesh(String name, float[] v, float[] t, int[] triangleIndices, int[] lineIndices) {
+    protected Mesh(String name, float[] v, float[] t, int[] triangleIndices, int[] lineIndices) {
         this.name = name;
         this.vertices = v;
         this.textureCoordinates = t;
@@ -48,24 +64,8 @@ class SpriteMesh {
         GL30.glBindVertexArray(0);
     }
 
-    protected static SpriteMesh create(String name, float[] textureCoordinates) {
-        float[] vertices = {
-                -0.5f, 0.5f,
-                0.5f, 0.5f,
-                -0.5f, -0.5f,
-                0.5f, -0.5f,
-        };
-        int[] triangleIndices = {
-                0, 2, 1,
-                1, 2, 3,
-        };
-        int[] lineIndices = {
-                0, 2,
-                2, 3,
-                3, 1,
-                1, 0,
-        };
-        return new SpriteMesh(name, vertices, textureCoordinates, triangleIndices, lineIndices);
+    protected static Mesh create(String name, float[] textureCoordinates) {
+        return new Mesh(name, SPRITE_VERTICES, textureCoordinates, SPRITE_TRIANGLE_INDICES, SPRITE_LINE_INDICES);
     }
 
     protected static void dispose() {

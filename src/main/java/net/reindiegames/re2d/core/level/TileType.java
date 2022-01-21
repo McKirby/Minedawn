@@ -10,14 +10,14 @@ import java.util.Map;
 public class TileType extends GameResource {
     public static final String RESOURCE_PATH = "tiles/";
 
+    public static TileType GRASS;
+
     public static final int NO_TILING = 0;
     public static final int COMPLETE_TILING = 1;
     public static final short[] TILING_VARIANTS = new short[2];
 
-    public static final int GRASS_ID = 1;
-    public static TileType GRASS;
-
-    private static final Map<Integer, TileType> TILE_TYPES = new HashMap<>();
+    private static final Map<Integer, TileType> ID_TILE_MAP = new HashMap<>();
+    private static final Map<String, TileType> RESOURCE_TILE_MAP = new HashMap<>();
 
     static {
         TILING_VARIANTS[NO_TILING] = 1;
@@ -27,21 +27,26 @@ public class TileType extends GameResource {
     protected int tiling;
     protected short defaultVariant;
 
-    private TileType(String resourceName) {
-        super(resourceName);
-        TILE_TYPES.put(id, this);
+    private TileType(String resource) {
+        super(resource);
+        ID_TILE_MAP.put(id, this);
+        RESOURCE_TILE_MAP.put(resource, this);
     }
 
     private static void link() throws Exception {
-        ReflectionUtil.setStaticField(TileType.class, "GRASS", TileType.getById(GRASS_ID));
+        ReflectionUtil.setStatic(TileType.class, "GRASS", TileType.getByResource("grass.json"));
     }
 
     public static TileType getById(int id) {
-        return TILE_TYPES.getOrDefault(id, null);
+        return ID_TILE_MAP.getOrDefault(id, null);
+    }
+
+    public static TileType getByResource(String resource) {
+        return RESOURCE_TILE_MAP.getOrDefault(resource, null);
     }
 
     public static TileType[] getTypes() {
-        return TILE_TYPES.values().toArray(new TileType[TILE_TYPES.size()]);
+        return ID_TILE_MAP.values().toArray(new TileType[ID_TILE_MAP.size()]);
     }
 
     public int getTiling() {
@@ -61,6 +66,6 @@ public class TileType extends GameResource {
 
     @Override
     public String getResourcePath() {
-        return RESOURCE_PATH + resourceName;
+        return RESOURCE_PATH + resource;
     }
 }

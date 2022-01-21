@@ -4,15 +4,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.TileType;
+import org.lwjgl.BufferUtils;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static net.reindiegames.re2d.client.Mesh.*;
+import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
+
 public class ClientCoreBridge {
     protected static final int[] TILING_WIDTH = new int[2];
-    protected static final Map<Integer, Map<Short, SpriteMesh[]>> TILE_SPRITE_MAP = new HashMap<>();
+    protected static final Map<Integer, Map<Short, Mesh[]>> TILE_SPRITE_MAP = new HashMap<>();
     protected static final Map<Integer, TextureAtlas> TILE_ATLAS_MAP = new HashMap<>();
+
+    protected static final Map<Integer, Map<Integer, Mesh>> CHUNK_MESH_MAP = new HashMap<>();
 
     static {
         TILING_WIDTH[TileType.NO_TILING] = 1;
@@ -37,26 +46,26 @@ public class ClientCoreBridge {
                     throw new IllegalArgumentException("The Sprite-Count does not match the Tiling!");
                 }
 
-                final Map<Short, SpriteMesh[]> variantMap = new HashMap<>();
+                final Map<Short, Mesh[]> variantMap = new HashMap<>();
                 for (short variant = 0; variant < spriteArray.size(); variant++) {
                     final JsonElement element = spriteArray.get(variant);
 
-                    SpriteMesh[] spriteMeshes;
+                    Mesh[] meshes;
                     int spriteIndex, column, row;
                     float[] texCoords;
 
                     if (element.isJsonPrimitive()) {
-                        spriteMeshes = new SpriteMesh[1];
+                        meshes = new Mesh[1];
                         spriteIndex = element.getAsInt();
 
                         column = spriteIndex % atlas.columns;
                         row = spriteIndex / atlas.columns;
                         texCoords = atlas.getTextureCoords(column, row);
 
-                        spriteMeshes[0] = SpriteMesh.create("sprite_tile_" + type.name + "_0", texCoords);
+                        meshes[0] = Mesh.create("sprite_tile_" + type.name + "_0", texCoords);
                     } else {
                         final JsonArray subSpriteArray = spriteArray.get(variant).getAsJsonArray();
-                        spriteMeshes = new SpriteMesh[subSpriteArray.size()];
+                        meshes = new Mesh[subSpriteArray.size()];
 
                         for (int i = 0; i < subSpriteArray.size(); i++) {
                             spriteIndex = subSpriteArray.get(i).getAsInt();
@@ -65,10 +74,10 @@ public class ClientCoreBridge {
                             row = spriteIndex / atlas.columns;
                             texCoords = atlas.getTextureCoords(column, row);
 
-                            spriteMeshes[i] = SpriteMesh.create("sprite_tile_" + type.name + "_" + i, texCoords);
+                            meshes[i] = Mesh.create("sprite_tile_" + type.name + "_" + i, texCoords);
                         }
                     }
-                    variantMap.put(variant, spriteMeshes);
+                    variantMap.put(variant, meshes);
                 }
                 TILE_SPRITE_MAP.put(type.id, variantMap);
             } catch (IllegalArgumentException e) {
@@ -78,5 +87,66 @@ public class ClientCoreBridge {
         }
 
         return true;
+    }
+
+    protected static Mesh generateTerrainMesh(Chunk chunk) {
+        long start = System.currentTimeMillis();
+        final int tilesPerChunk = CHUNK_SIZE * CHUNK_SIZE;
+
+        final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(tilesPerChunk * SPRITE_VERTICES.length);
+        final FloatBuffer textureBuffer = BufferUtils.createFloatBuffer(tilesPerChunk * SPRITE_VERTICES.length);
+        final IntBuffer triangleBuffer = BufferUtils.createIntBuffer(tilesPerChunk * SPRITE_TRIANGLE_INDICES.length);
+        final IntBuffer lineBuffer = BufferUtils.createIntBuffer(tilesPerChunk * SPRITE_LINE_INDICES.length);
+
+        int offset = 0;
+
+        int id;
+        short variant;
+        Mesh tileMesh;
+        for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
+            for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
+                id = chunk.tiles[rx][ry];
+                if (id == 0) continue;
+                variant = chunk.variants[rx][ry];
+                tileMesh = TILE_SPRITE_MAP.get(id).get(variant)[0];
+
+                for (int i = 0; i < tileMesh.vertices.length; i += 2) {
+                    vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
+                    vertexBuffer.put((tileMesh.vertices[i + 1] + ry) / CHUNK_SIZE);
+                }
+                textureBuffer.put(tileMesh.textureCoordinates);
+
+                for (int i = 0; i < tileMesh.triangleIndices.length; i++) {
+                    triangleBuffer.put(tileMesh.triangleIndices[i] + offset);
+                }
+
+                for (int i = 0; i < tileMesh.lineIndices.length; i++) {
+                    lineBuffer.put(tileMesh.lineIndices[i] + offset);
+                }
+                offset += 4;
+            }
+        }
+
+        final float[] v = new float[vertexBuffer.position()];
+        vertexBuffer.flip();
+        vertexBuffer.get(v, 0, v.length);
+
+        final float[] t = new float[textureBuffer.position()];
+        textureBuffer.flip();
+        textureBuffer.get(t, 0, t.length);
+
+        final int[] triangleIndices = new int[triangleBuffer.position()];
+        triangleBuffer.flip();
+        triangleBuffer.get(triangleIndices, 0, triangleIndices.length);
+
+        final int[] lineIndices = new int[lineBuffer.position()];
+        lineBuffer.flip();
+        lineBuffer.get(lineIndices, 0, lineIndices.length);
+
+        final Mesh mesh = new Mesh("chunk_" + chunk.cx + "_" + chunk.cy, v, t, triangleIndices, lineIndices);
+        long delta = System.currentTimeMillis() - start;
+        Log.debug("Generated Chunk-Mesh '" + mesh.name + "' in " + delta + "ms!");
+
+        return mesh;
     }
 }

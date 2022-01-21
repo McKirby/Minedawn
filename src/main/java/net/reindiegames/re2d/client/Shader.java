@@ -14,18 +14,18 @@ import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
+import static net.reindiegames.re2d.client.ClientParameters.tileScale;
+
 abstract class Shader {
     private static final Set<Integer> createdShaders = new HashSet<>();
     private static final Set<Integer> createdPrograms = new HashSet<>();
 
     protected final String vertexFile;
     protected final String fragmentFile;
-
-    private final FloatBuffer matrixBuffer;
-
     protected int program = 0;
     protected int vertexShader = 0;
     protected int fragmentShader = 0;
+    private final FloatBuffer matrixBuffer;
 
     protected Shader(String vertexFile, String fragmentFile) throws IllegalArgumentException {
         this.vertexFile = vertexFile;
@@ -114,6 +114,15 @@ abstract class Shader {
         dest[15] = matrix.m33();
     }
 
+    protected static void generateTransformation(float[] dest, Vector2f pos, Vector2f scale, float rotation) {
+        final Matrix4f matrix = new Matrix4f();
+        matrix.translate(pos.x * tileScale, pos.y * tileScale, 0.0f);
+        matrix.rotate(rotation, new Vector3f(0.0f, 0.0f, 1.0f));
+        matrix.scale(scale.x * tileScale, scale.y * tileScale, 0.0f);
+
+        Shader.toFloatArray(matrix, dest);
+    }
+
     protected abstract void loadUniforms();
 
     protected void bind() {
@@ -151,7 +160,6 @@ abstract class Shader {
     protected final void loadMatrix4f(int loc, Matrix4f value) {
         float[] array = new float[16];
         Shader.toFloatArray(value, array);
-
         GL30.glUniformMatrix4fv(loc, false, array);
     }
 

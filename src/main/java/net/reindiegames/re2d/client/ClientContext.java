@@ -27,7 +27,7 @@ public class ClientContext extends GameContext {
     protected static long window = -1;
     protected static float ctx;
     protected static float cty;
-    protected static float speed = 0.2f;
+    protected static float speed = 1.0f;
     protected static ResourceLevel currentLevel;
 
     private ClientContext() {
@@ -104,7 +104,7 @@ public class ClientContext extends GameContext {
             Log.info("Disposing Assets...");
             Shader.dispose();
             TextureAtlas.dispose();
-            SpriteMesh.dispose();
+            Mesh.dispose();
 
             Log.info("Disposing the OpenGL-Context...");
             Callbacks.glfwFreeCallbacks(window);
@@ -121,10 +121,10 @@ public class ClientContext extends GameContext {
     @Override
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
-        if (Input.MOVE_NORTH.isPressed()) cty += speed;
-        if (Input.MOVE_SOUTH.isPressed()) cty -= speed;
-        if (Input.MOVE_EAST.isPressed()) ctx += speed;
-        if (Input.MOVE_WEST.isPressed()) ctx -= speed;
+        if (Input.MOVE_NORTH.isPressed()) cty += speed * delta;
+        if (Input.MOVE_SOUTH.isPressed()) cty -= speed * delta;
+        if (Input.MOVE_EAST.isPressed()) ctx += speed * delta;
+        if (Input.MOVE_WEST.isPressed()) ctx -= speed * delta;
 
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);

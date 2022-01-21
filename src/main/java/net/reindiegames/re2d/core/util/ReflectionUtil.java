@@ -17,7 +17,7 @@ public final class ReflectionUtil {
         }
     }
 
-    public static void setStaticField(Class<?> clazz, String fieldName, Object value) throws Exception {
+    public static void setStatic(Class<?> clazz, String fieldName, Object value) throws Exception {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);

@@ -11,12 +11,12 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 public abstract class GameResource implements JsonResourceIO {
-    public final String resourceName;
+    public final String resource;
     public final int id;
     public final String name;
 
-    protected GameResource(String resourceName) {
-        this.resourceName = resourceName;
+    protected GameResource(String resource) {
+        this.resource = resource;
 
         final JsonObject object = JsonResourceIO.loadObjectFromResource(this.getResourcePath());
         final JsonObject metaObject = object.get("meta").getAsJsonObject();
@@ -77,6 +77,6 @@ public abstract class GameResource implements JsonResourceIO {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "{Resource = '" + resourceName + "', ID = " + id + "}";
+        return this.getClass().getSimpleName() + "{Resource = '" + resource + "', ID = " + id + "}";
     }
 }

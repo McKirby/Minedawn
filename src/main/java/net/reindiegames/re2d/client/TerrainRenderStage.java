@@ -1,9 +1,6 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.level.Chunk;
-import net.reindiegames.re2d.core.level.CoordinateSystems;
 import net.reindiegames.re2d.core.level.Level;
-import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -11,9 +8,11 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
+import static net.reindiegames.re2d.client.ClientCoreBridge.CHUNK_MESH_MAP;
 import static net.reindiegames.re2d.client.ClientParameters.clearColor;
-import static net.reindiegames.re2d.client.ClientParameters.tileScale;
 import static net.reindiegames.re2d.core.CoreParameters.debug;
 
 class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
@@ -54,30 +53,26 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     @Override
     protected void process(long totalTicks, Level level) {
         level.getChunkBase().forEachLoadedChunk((chunk -> {
-            int tileId;
-            short variant;
-            for (byte rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
-                for (byte ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
-                    tileId = chunk.tiles[0][rx][ry];
-                    variant = chunk.variants[0][rx][ry];
+            Map<Integer, Mesh> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
+            Mesh mesh = xMap.getOrDefault(chunk.cy, null);
+            if (mesh == null) {
+                mesh = ClientCoreBridge.generateTerrainMesh(chunk);
+                xMap.put(chunk.cy, mesh);
+            }
+            GL30.glBindVertexArray(mesh.vao);
 
-                    final SpriteMesh mesh = ClientCoreBridge.TILE_SPRITE_MAP.get(tileId).get(variant)[0];
-                    ClientCoreBridge.TILE_ATLAS_MAP.get(tileId).bind(0);
+            if (chunk.changed) {
+                Shader.generateTransformation(chunk.transformation, chunk.pos, chunk.size, chunk.rotation);
+                chunk.changed = false;
+            }
+            shader.loadTransformation(chunk.transformation);
 
-                    GL30.glBindVertexArray(mesh.vao);
-
-                    final Vector2f tileLevelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
-                    tileLevelPos.mul(tileScale);
-                    shader.loadTransformation(tileLevelPos, 0.0f, new Vector2f(tileScale, tileScale));
-
-                    if (debug) {
-                        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
-                        GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
-                    } else {
-                        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
-                        GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
-                    }
-                }
+            if (debug) {
+                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
+                GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
+            } else {
+                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
+                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
             }
         }));
     }

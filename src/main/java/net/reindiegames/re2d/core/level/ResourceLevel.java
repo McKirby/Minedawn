@@ -10,31 +10,38 @@ import java.util.Map;
 public class ResourceLevel extends GameResource implements Level {
     public static final String RESOURCE_PATH = "level/";
 
-    public static final int TEST_LEVEL_ID = 1;
+    public static final int TEST_LEVEL_ID = 100000;
     public static ResourceLevel TEST_LEVEL;
 
-    private static final Map<Integer, ResourceLevel> RESOURCE_LEVELS = new HashMap<>();
+    private static final Map<Integer, ResourceLevel> ID_LEVEL_MAP = new HashMap<>();
+    private static final Map<String, ResourceLevel> RESOURCE_LEVEL_MAP = new HashMap<>();
 
     public final ChunkBase chunkBase;
 
-    private ResourceLevel(String resourceName) {
-        super(resourceName);
+    private ResourceLevel(String resource) {
+        super(resource);
         this.chunkBase = new ChunkBase(this);
-        RESOURCE_LEVELS.put(id, this);
+
+        ID_LEVEL_MAP.put(id, this);
+        RESOURCE_LEVEL_MAP.put(resource, this);
 
         this.getChunkBase().getChunk(0, 0, true, true);
     }
 
     private static void link() throws Exception {
-        ReflectionUtil.setStaticField(ResourceLevel.class, "TEST_LEVEL", ResourceLevel.getById(TEST_LEVEL_ID));
+        ReflectionUtil.setStatic(ResourceLevel.class, "TEST_LEVEL", ResourceLevel.getByResource("test_level.json"));
     }
 
     public static ResourceLevel getById(int id) {
-        return RESOURCE_LEVELS.getOrDefault(id, null);
+        return ID_LEVEL_MAP.getOrDefault(id, null);
     }
 
-    public static ResourceLevel[] getLevels() {
-        return RESOURCE_LEVELS.values().toArray(new ResourceLevel[RESOURCE_LEVELS.size()]);
+    public static ResourceLevel getByResource(String resource) {
+        return RESOURCE_LEVEL_MAP.getOrDefault(resource, null);
+    }
+
+    public static ResourceLevel[] getTypes() {
+        return ID_LEVEL_MAP.values().toArray(new ResourceLevel[ID_LEVEL_MAP.size()]);
     }
 
     @Override
@@ -43,7 +50,7 @@ public class ResourceLevel extends GameResource implements Level {
 
     @Override
     public String getResourcePath() {
-        return RESOURCE_PATH + resourceName;
+        return RESOURCE_PATH + resource;
     }
 
     @Override

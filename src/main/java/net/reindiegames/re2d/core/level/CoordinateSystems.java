@@ -23,6 +23,10 @@ public final class CoordinateSystems {
         return vec;
     }
 
+    public static Vector2f chunkToLevel(int cx, int cy) {
+        return new Vector2f(cx * Chunk.CHUNK_SIZE, cy * Chunk.CHUNK_SIZE);
+    }
+
     public static Vector2i levelToChunkRelative(Vector2f levelPos) {
         final Vector2i chunkPos = CoordinateSystems.levelToChunk(levelPos);
 
