@@ -26,8 +26,8 @@ public class ResourceLevel extends GameResource implements Level {
         RESOURCE_LEVEL_MAP.put(resource, this);
 
         int spawnSize = 1;
-        for(int cx = -spawnSize; cx <= spawnSize; cx++) {
-            for(int cy = -spawnSize; cy <= spawnSize; cy++) {
+        for (int cx = -spawnSize; cx <= spawnSize; cx++) {
+            for (int cy = -spawnSize; cy <= spawnSize; cy++) {
                 this.getChunkBase().getChunk(cx, cy, true, true);
             }
         }

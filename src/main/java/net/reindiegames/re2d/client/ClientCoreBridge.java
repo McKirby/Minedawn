@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
+import net.reindiegames.re2d.core.level.Tile;
 import net.reindiegames.re2d.core.level.TileType;
 import org.lwjgl.system.MemoryUtil;
 
@@ -112,10 +113,13 @@ public class ClientCoreBridge {
         int maxAnimationDuration = 1;
         int animationDuration;
 
-        AnimationParameters parameters;
+        Tile tile;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                animationDuration = TILE_ANIMATION_MAP.get(c.tiles[rx][ry]).get(c.variants[rx][ry]).duration;
+                tile = c.tiles[rx][ry];
+                if (tile == null) continue;
+
+                animationDuration = TILE_ANIMATION_MAP.get(tile.type.id).get(tile.variant).duration;
                 if (animationDuration > maxAnimationDuration) {
                     maxAnimationDuration = animationDuration;
                 }
@@ -141,19 +145,16 @@ public class ClientCoreBridge {
 
         int offset = 0;
 
-        int id;
-        short variant;
-        AnimationParameters params;
-
+        Tile tile;
+        AnimationParameters p;
         Mesh tileMesh;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                id = chunk.tiles[rx][ry];
-                if (id == 0) continue;
-                variant = chunk.variants[rx][ry];
-                params = TILE_ANIMATION_MAP.get(id).get(variant);
+                tile = chunk.tiles[rx][ry];
+                if (tile == null) continue;
 
-                tileMesh = TILE_SPRITE_MAP.get(id).get(variant)[(tick / params.ticks) % params.frames];
+                p = TILE_ANIMATION_MAP.get(tile.type.id).get(tile.variant);
+                tileMesh = TILE_SPRITE_MAP.get(tile.type.id).get(tile.variant)[(tick / p.animationTicks) % p.frames];
 
                 for (int i = 0; i < tileMesh.vertices.length; i += 2) {
                     vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
@@ -180,28 +181,26 @@ public class ClientCoreBridge {
         textureBuffer.flip();
         textureBuffer.get(t, 0, t.length);
 
-        final int[] triangleIndices = new int[triangleBuffer.position()];
+        final int[] triIndices = new int[triangleBuffer.position()];
         triangleBuffer.flip();
-        triangleBuffer.get(triangleIndices, 0, triangleIndices.length);
+        triangleBuffer.get(triIndices, 0, triIndices.length);
 
-        final int[] lineIndices = new int[lineBuffer.position()];
+        final int[] liIndices = new int[lineBuffer.position()];
         lineBuffer.flip();
-        lineBuffer.get(lineIndices, 0, lineIndices.length);
+        lineBuffer.get(liIndices, 0, liIndices.length);
 
-        final Mesh mesh = new Mesh("chunk_" + chunk.cx + "_" + chunk.cy, v, t, triangleIndices, lineIndices);
-
-        return mesh;
+        return new Mesh("chunk_" + chunk.cx + "_" + chunk.cy + "_" + tick, v, t, triIndices, liIndices);
     }
 
     static class AnimationParameters {
         protected final int frames;
-        protected final int ticks;
+        protected final int animationTicks;
         protected final int duration;
 
-        protected AnimationParameters(int frames, int ticks) {
+        protected AnimationParameters(int frames, int animationTicks) {
             this.frames = frames;
-            this.ticks = ticks;
-            this.duration = frames * ticks;
+            this.animationTicks = animationTicks;
+            this.duration = frames * animationTicks;
         }
     }
 }
