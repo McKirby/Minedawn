@@ -30,6 +30,7 @@ class Mesh {
 
     private static final Set<Integer> createdVaos = new HashSet<>();
     private static final Set<Integer> createdVbos = new HashSet<>();
+
     protected final int vao;
     protected final int vertexVbo;
     protected final int textureCoordinateVbo;

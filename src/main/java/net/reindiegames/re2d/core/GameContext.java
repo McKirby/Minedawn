@@ -4,6 +4,7 @@ import net.reindiegames.re2d.client.ClientContext;
 import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.level.entity.EntityType;
+import net.reindiegames.re2d.core.util.DayNightCircle;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
@@ -13,6 +14,8 @@ import java.lang.reflect.Constructor;
 import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 
 public abstract class GameContext {
+    public static final DayNightCircle dayNightCircle = new DayNightCircle();
+
     protected GameContext() {
     }
 
@@ -57,7 +60,9 @@ public abstract class GameContext {
         Log.info("Bye!");
     }
 
-    protected abstract void syncTick(long totalTicks, float delta);
+    protected void syncTick(long totalTicks, float delta) {
+        dayNightCircle.tick();
+    }
 
     protected abstract void asyncTick(long totalTicks, float delta);
 

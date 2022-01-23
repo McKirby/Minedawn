@@ -124,6 +124,7 @@ public class ClientContext extends GameContext {
 
     @Override
     protected void syncTick(long totalTicks, float delta) {
+        super.syncTick(totalTicks, delta);
     }
 
     @Override
@@ -155,6 +156,6 @@ public class ClientContext extends GameContext {
 
     @Override
     protected String debugInfo(int syncTicks, int asyncTicks) {
-        return "FPS: " + asyncTicks + ", TPS: " + syncTicks;
+        return GameContext.dayNightCircle.getTimeString() + ", FPS: " + asyncTicks + ", TPS: " + syncTicks;
     }
 }

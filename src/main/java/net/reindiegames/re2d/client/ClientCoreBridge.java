@@ -18,7 +18,7 @@ import java.util.Map;
 import static net.reindiegames.re2d.client.Mesh.*;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
-public class ClientCoreBridge {
+class ClientCoreBridge {
     protected static final Map<Integer, Map<Short, Mesh[]>> TILE_SPRITE_MAP = new HashMap<>();
     protected static final Map<Integer, Map<Short, AnimationParameters>> TILE_ANIMATION_MAP = new HashMap<>();
     protected static final Map<Integer, TextureAtlas> TILE_ATLAS_MAP = new HashMap<>();
@@ -38,11 +38,11 @@ public class ClientCoreBridge {
     }
 
     public static boolean bridge() {
-        if (!ClientCoreBridge.bridgeTileSprites()) return false;
+        if (!ClientCoreBridge.bridgeTiles()) return false;
         return true;
     }
 
-    private static boolean bridgeTileSprites() {
+    private static boolean bridgeTiles() {
         final TileType[] types = TileType.getTypes();
         for (TileType type : types) {
             try {
