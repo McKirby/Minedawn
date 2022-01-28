@@ -1,4 +1,4 @@
-import net.reindiegames.re2d.core.util.DayNightCircle;
+import net.reindiegames.re2d.core.game.DayNightCircle;
 import org.junit.Assert;
 import org.junit.Test;
 

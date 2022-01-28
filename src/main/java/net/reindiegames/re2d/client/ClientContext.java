@@ -2,8 +2,7 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
-import net.reindiegames.re2d.core.level.ResourceLevel;
-import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.*;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -29,7 +28,7 @@ public class ClientContext extends GameContext {
     protected static float ctx;
     protected static float cty;
     protected static float speed = 1.0f;
-    protected static ResourceLevel currentLevel;
+    protected static Level currentLevel;
 
     private ClientContext() {
     }
@@ -94,16 +93,17 @@ public class ClientContext extends GameContext {
         Log.info("Loading Assets..");
         if (!TextureAtlas.setup()) throw new IllegalStateException("Failed to load all Texture-Atlases!");
 
-        Log.info("Setting up Render-Pipelines...");
+        Log.info("Setting up RendTer-Pipelines...");
         levelRenderPipeline = new LevelRenderPipeline();
-        ctx = 0.0f;
-        cty = 0.0f;
+        ctx = 28.0f;
+        cty = 28.0f;
 
         Log.info("Bridging the Client to the Core...");
         if (!ClientCoreBridge.bridge()) throw new IllegalStateException("Could not Bridge between Core and Client!");
 
         Log.info("Loading Level...");
-        currentLevel = ResourceLevel.TEST_LEVEL;
+        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(1337, 64, 64));
+        //currentLevel = ResourceLevel.TEST_LEVEL;
     }
 
     @Disposer
@@ -145,6 +145,7 @@ public class ClientContext extends GameContext {
             tileScaleChanged = true;
         }
 
+
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);
     }
@@ -156,6 +157,6 @@ public class ClientContext extends GameContext {
 
     @Override
     protected String debugInfo(int syncTicks, int asyncTicks) {
-        return GameContext.dayNightCircle.getTimeString() + ", FPS: " + asyncTicks + ", TPS: " + syncTicks;
+        return GameContext.DAY_NIGHT_CIRCLE.getTimeString() + ", FPS: " + asyncTicks + ", TPS: " + syncTicks;
     }
 }

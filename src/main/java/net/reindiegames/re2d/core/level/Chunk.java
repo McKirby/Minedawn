@@ -16,14 +16,6 @@ public class Chunk extends Transformable {
         this.level = level;
         this.cx = cx;
         this.cy = cy;
-
         this.tiles = new Tile[CHUNK_SIZE][CHUNK_SIZE];
-        Vector2f pos;
-        for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
-            for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                pos = CoordinateSystems.chunkRelativeToLevel(cx, cy, rx, ry);
-                tiles[rx][ry] = new Tile(level, (int) pos.x, (int) pos.y, TileType.GRASS);
-            }
-        }
     }
 }

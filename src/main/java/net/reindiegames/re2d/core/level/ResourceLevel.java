@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceLevel extends GameResource implements Level {
-    public static final String RESOURCE_PATH = "level/";
+    public static final String RESOURCE_PATH = "core/level/";
 
     public static final int TEST_LEVEL_ID = 100000;
     public static ResourceLevel TEST_LEVEL;
@@ -25,7 +25,7 @@ public class ResourceLevel extends GameResource implements Level {
         ID_LEVEL_MAP.put(id, this);
         RESOURCE_LEVEL_MAP.put(resource, this);
 
-        int spawnSize = 1;
+        int spawnSize = 2;
         for (int cx = -spawnSize; cx <= spawnSize; cx++) {
             for (int cy = -spawnSize; cy <= spawnSize; cy++) {
                 this.getChunkBase().getChunk(cx, cy, true, true);
@@ -64,7 +64,11 @@ public class ResourceLevel extends GameResource implements Level {
     }
 
     @Override
-    public Chunk loadChunk(int cx, int cy) {
-        return new Chunk(this, cx, cy);
+    public void populate(Chunk chunk, int[][] tiles) {
+        for (int rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
+            for (int ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
+                tiles[rx][ry] = TileType.GRASS.id;
+            }
+        }
     }
 }

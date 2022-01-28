@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TileType extends GameResource {
-    public static final String RESOURCE_PATH = "tiles/";
+    public static final String RESOURCE_PATH = "core/tiles/";
 
     public static TileType GRASS;
     public static TileType WATER;

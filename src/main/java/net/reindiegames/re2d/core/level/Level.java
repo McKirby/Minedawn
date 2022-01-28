@@ -3,9 +3,7 @@ package net.reindiegames.re2d.core.level;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-public interface Level {
-    public abstract Chunk loadChunk(int cx, int cy);
-
+public interface Level extends ChunkPopulator {
     public abstract ChunkBase getChunkBase();
 
     public default Chunk getChunk(Vector2f levelPos) {

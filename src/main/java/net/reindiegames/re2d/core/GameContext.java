@@ -1,10 +1,11 @@
 package net.reindiegames.re2d.core;
 
 import net.reindiegames.re2d.client.ClientContext;
+import net.reindiegames.re2d.core.game.DayNightCircle;
+import net.reindiegames.re2d.core.game.tasks.Task;
 import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.level.entity.EntityType;
-import net.reindiegames.re2d.core.util.DayNightCircle;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
@@ -14,7 +15,7 @@ import java.lang.reflect.Constructor;
 import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 
 public abstract class GameContext {
-    public static final DayNightCircle dayNightCircle = new DayNightCircle();
+    public static final DayNightCircle DAY_NIGHT_CIRCLE = new DayNightCircle();
 
     protected GameContext() {
     }
@@ -33,6 +34,7 @@ public abstract class GameContext {
         Log.info("Loading Core...");
         if (!GameResource.loadAll(TileType.class)) throw new IllegalStateException("Cannot load Tiles!");
         if (!GameResource.loadAll(EntityType.class)) throw new IllegalStateException("Cannot load Entities!");
+        if (!GameResource.loadAll(Task.class)) throw new IllegalStateException("Cannot load Tasks!");
         if (!GameResource.loadAll(ResourceLevel.class)) throw new IllegalStateException("Cannot load Levels!");
 
         try {
@@ -61,7 +63,7 @@ public abstract class GameContext {
     }
 
     protected void syncTick(long totalTicks, float delta) {
-        dayNightCircle.tick();
+        DAY_NIGHT_CIRCLE.tick();
     }
 
     protected abstract void asyncTick(long totalTicks, float delta);

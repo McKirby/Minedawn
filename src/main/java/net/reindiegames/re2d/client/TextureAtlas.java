@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 enum TextureAtlas {
-    TERRAIN_01("sprites/terrain.png", 32, 32);
+    TERRAIN_01("client/sprites/terrain.png", 32, 32);
 
     protected static final int SPRITE_PIXEL_SIZE = 32;
 
