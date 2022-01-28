@@ -10,109 +10,241 @@ import java.util.Stack;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 public class DungeonChunkGenerator implements ChunkGenerator {
-    public final int seed;
-    public final int chunkWidth;
-    public final int tileWidth;
-    public final int chunkHeight;
-    public final int tileHeight;
-    private final Random random;
-    private final int[][] tiles;
+    private static final byte WALL = 0;
+    private static final byte PATH = 1;
+    private static final byte CROSS = 2;
+    private static final byte T_CROSS = 3;
+    private static final byte DEAD_END = 4;
+    private static final byte PATHWAY = 5;
+    private static final byte ROOM = 6;
 
-    public DungeonChunkGenerator(int seed, int width, int height) {
+    public final int seed;
+    public final int width;
+    public final int height;
+
+    public final int chunkWidth;
+    public final int chunkHeight;
+
+    public int minRoomCount = 5;
+    public int maxRoomCount = 25;
+
+    public int minRoomSize = 5;
+    public int maxRoomSize = 15;
+
+    private final Random random;
+    private final byte[][] variants;
+
+    public DungeonChunkGenerator(int seed, int w, int h) {
         this.seed = seed;
         this.random = new Random(seed);
 
-        this.tileWidth = width + (1 - width % 2);
-        this.tileHeight = height + (1 - height % 2);
+        if (w <= maxRoomSize * 2)
+            throw new IllegalArgumentException("The Width has to be at Minimum double Room Size!");
+        if (h <= maxRoomSize * 2)
+            throw new IllegalArgumentException("The Height has to be at Minimum double Room Size!");
 
-        this.chunkWidth = tileWidth / CHUNK_SIZE + 1;
-        this.chunkHeight = tileHeight / CHUNK_SIZE + 1;
+        this.width = w + (1 - w % 2);
+        this.height = h + (1 - h % 2);
+        this.chunkWidth = width / CHUNK_SIZE + (width % CHUNK_SIZE != 0 ? 1 : 0);
+        this.chunkHeight = height / CHUNK_SIZE + (height % CHUNK_SIZE != 0 ? 1 : 0);
 
-        this.tiles = new int[tileWidth][tileHeight];
+        this.variants = new byte[width][height];
+
         this.generateMaze();
+        this.generateRooms();
+        this.characterize();
+
+        this.replaceAll(DEAD_END, WALL);
+        this.replaceRandom(20, PATHWAY, WALL);
+        this.replaceAll(DEAD_END, WALL);
+        this.characterize();
     }
 
-    private boolean isBoarder(int tx, int ty) {
-        return tx == 0 || tx == tileWidth - 1 || ty == 0 || ty == tileHeight - 1;
+    private boolean isBorder(int x, int y) {
+        return x == 0 || x == width - 1 || y == 0 || y == height - 1;
     }
 
-    private boolean isOut(int tx, int ty) {
-        return tx < 0 || tx > tileWidth - 1 || ty < 0 || ty > tileHeight - 1;
+    private boolean isOut(int x, int y) {
+        return x < 0 || x > width - 1 || y < 0 || y > height - 1;
     }
 
-    private boolean isBoarderOrBeyond(int tx, int ty) {
-        return this.isBoarder(tx, ty) || this.isOut(tx, ty);
+    private boolean isBoarderOrBeyond(int x, int y) {
+        return this.isBorder(x, y) || this.isOut(x, y);
     }
 
     public void generateMaze() {
-        for (int tx = 0; tx < tileWidth; tx++) {
-            for (int ty = 0; ty < tileHeight; ty++) {
-                tiles[tx][ty] = TileType.WATER.id;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                variants[x][y] = WALL;
             }
         }
 
-        int startX = 1 + random.nextInt(tileWidth - 1);
-        startX += (1 - startX % 2);
-        int startY = 1 + random.nextInt(tileHeight - 1);
-        startY += (1 - startY % 2);
+        int sx = 1 + random.nextInt(width - 1);
+        sx += (1 - sx % 2);
 
-        final Stack<Integer> tileStack = new Stack<Integer>();
+        int sy = 1 + random.nextInt(height - 1);
+        sy += (1 - sy % 2);
+
+        final Stack<Integer> stack = new Stack<>();
         final List<Integer> neighbours = new ArrayList<>(8);
-        tileStack.push(startY * tileWidth + startX);
+        stack.push(sy * width + sx);
 
-        while (!tileStack.empty()) {
-            int t = tileStack.pop();
-            int tx = t % tileWidth;
-            int ty = t / tileWidth;
-            tiles[tx][ty] = TileType.GRASS.id;
+        int current, x, y;
+        int rx, ry, neighbour, nx, ny, dx, dy;
+        while (!stack.empty()) {
+            current = stack.pop();
+            x = current % width;
+            y = current / width;
+            variants[x][y] = PATH;
 
-            int neighbour, nx, ny, dx, dy;
             neighbours.clear();
-            for (int rx = -2; rx <= 2; rx += 2) {
-                for (int ry = -2; ry <= 2; ry += 2) {
+            for (rx = -2; rx <= 2; rx += 2) {
+                for (ry = -2; ry <= 2; ry += 2) {
                     if (rx != 0 ^ ry != 0) {
-                        nx = tx + rx;
-                        ny = ty + ry;
+                        nx = x + rx;
+                        ny = y + ry;
                         if (this.isBoarderOrBeyond(nx, ny)) continue;
-                        if (tiles[nx][ny] != TileType.WATER.id) continue;
-                        neighbours.add(ny * tileWidth + nx);
+                        if (variants[nx][ny] != WALL) continue;
+                        neighbours.add(ny * width + nx);
                     }
                 }
             }
 
             if (!neighbours.isEmpty()) {
-                tileStack.push(ty * tileWidth + tx);
+                stack.push(y * width + x);
 
                 neighbour = neighbours.get(random.nextInt(neighbours.size()));
-                nx = neighbour % tileWidth;
-                ny = neighbour / tileWidth;
-                tiles[nx][ny] = TileType.GRASS.id;
+                nx = neighbour % width;
+                ny = neighbour / width;
+                variants[nx][ny] = PATH;
 
-                dx = nx - tx;
-                if (dx == -2) tiles[tx - 1][ty] = TileType.GRASS.id;
-                if (dx == 2) tiles[tx + 1][ty] = TileType.GRASS.id;
+                dx = nx - x;
+                dy = ny - y;
+                if (dx == -2) variants[x - 1][y] = PATH;
+                if (dx == 2) variants[x + 1][y] = PATH;
+                if (dy == -2) variants[x][y - 1] = PATH;
+                if (dy == 2) variants[x][y + 1] = PATH;
 
-                dy = ny - ty;
-                if (dy == -2) tiles[tx][ty - 1] = TileType.GRASS.id;
-                if (dy == 2) tiles[tx][ty + 1] = TileType.GRASS.id;
-
-                tileStack.push(neighbour);
+                stack.push(neighbour);
             }
         }
+    }
+
+    public void generateRooms() {
+        int count = minRoomSize + random.nextInt(maxRoomCount - minRoomCount);
+
+        int roomWidth, roomHeight;
+        int sx, sy, x, y;
+        for (int room = 0; room < count; room++) {
+            roomWidth = minRoomSize + random.nextInt(maxRoomSize - minRoomSize);
+            roomHeight = minRoomSize + random.nextInt(maxRoomSize - minRoomSize);
+
+            sx = 1 + random.nextInt((width - 1) - roomWidth);
+            sy = 1 + random.nextInt((height - 1) - roomHeight);
+
+            for (x = sx; x < (sx + roomWidth); x++) {
+                for (y = sy; y < (sy + roomHeight); y++) {
+                    variants[x][y] = ROOM;
+                }
+            }
+        }
+    }
+
+    public void characterize() {
+        int t, e, s, w;
+        int mask;
+
+        int i = 0;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (this.isBorder(x, y) || variants[x][y] == WALL) {
+                    variants[x][y] = WALL;
+                    continue;
+                }
+
+                mask = 0b000000000;
+                mask |= (variants[x - 1][y + 1] == WALL ? 0b100000000 : 0b000000000);
+                mask |= (variants[x + 0][y + 1] == WALL ? 0b010000000 : 0b000000000);
+                mask |= (variants[x + 1][y + 1] == WALL ? 0b001000000 : 0b000000000);
+
+                mask |= (variants[x - 1][y + 0] == WALL ? 0b000100000 : 0b000000000);
+                mask |= (variants[x + 0][y + 0] == WALL ? 0b000010000 : 0b000000000);
+                mask |= (variants[x + 1][y + 0] == WALL ? 0b000001000 : 0b000000000);
+
+                mask |= (variants[x - 1][y - 1] == WALL ? 0b000000100 : 0b000000000);
+                mask |= (variants[x + 0][y - 1] == WALL ? 0b000000010 : 0b000000000);
+                mask |= (variants[x + 1][y - 1] == WALL ? 0b000000001 : 0b000000000);
+
+                int nm = 0b000101010;
+                int em = 0b010100010;
+                int sm = 0b010101000;
+                int wm = 0b010001010;
+                if ((mask & nm) == nm || (mask & em) == em || (mask & sm) == sm || (mask & wm) == wm) {
+                    variants[x][y] = DEAD_END;
+                    continue;
+                }
+
+                switch (mask) {
+                    case 0b101000101 -> variants[x][y] = CROSS;
+                    case 0b111000101, 0b101001101, 0b101000111, 0b101100101 -> variants[x][y] = T_CROSS;
+                    case 0b111000111, 0b101101101 -> variants[x][y] = PATHWAY;
+                    default -> variants[x][y] = PATH;
+                }
+            }
+        }
+    }
+
+    private void replaceRandom(int count, byte type, byte newType) {
+        final List<Integer> found = new ArrayList<>(width * height);
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (variants[x][y] == type) {
+                    found.add(y * width + x);
+                }
+            }
+        }
+
+        int left = count;
+        while (!found.isEmpty() && left > 0) {
+            int current = found.remove(random.nextInt(found.size()));
+            int x = current % width;
+            int y = current / width;
+
+            variants[x][y] = newType;
+            left--;
+        }
+    }
+
+    private void replaceAll(byte variant, byte newVariant) {
+        int found;
+        do {
+            this.characterize();
+
+            found = 0;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    if (variants[x][y] == variant) {
+                        variants[x][y] = newVariant;
+                        found++;
+                    }
+                }
+            }
+        } while (found > 0);
     }
 
     @Override
     public void populate(Chunk chunk, int[][] tiles) {
         Vector2f levelPos;
-        int tx, ty;
+        int x, y;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                 levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
-                tx = (int) levelPos.x;
-                ty = (int) levelPos.y;
-                if (this.isOut(tx, ty)) continue;
+                x = (int) levelPos.x;
+                y = (int) levelPos.y;
+                if (this.isOut(x, y)) continue;
 
-                tiles[rx][ry] = this.tiles[tx][ty];
+                tiles[rx][ry] = (variants[x][y] == WALL ? TileType.WATER : TileType.GRASS).id;
             }
         }
     }
