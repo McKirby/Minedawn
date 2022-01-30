@@ -19,10 +19,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
 
     private static final byte WALL = 0;
     private static final byte ROOM = 1;
-    private static final byte PATH = 2;
-    private static final byte CROSS = 3;
-    private static final byte T_CROSS = 4;
-    private static final byte DEAD_END = 5;
+    private static final byte LOOT = 2;
+    private static final byte PATH = 3;
+    private static final byte CROSS = 4;
+    private static final byte T_CROSS = 5;
+    private static final byte DEAD_END = 6;
 
     public final long seed;
     public final int width;
@@ -64,23 +65,29 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             }
         }
 
+        //Generate Structures
         this.generateMaze();
         this.generateRooms();
         this.characterizePaths();
 
+        //Place Loot
+        int l = (int) (chunkHeight * chunkWidth / 2.5f);
+        this.replaceRandom(l, this.stream().filter(t -> t.type == DEAD_END), LOOT);
+        this.replaceRandom(l, this.stream().filter(t -> t.type == ROOM).filter(t -> t.scan(ROOM) == 0b111111111), LOOT);
+
+        //Remove DeadEnds and homogenize Paths
         this.replaceAll(DEAD_END, WALL);
+        this.stream().filter(t -> t.type >= PATH).filter(t -> t.between(ROOM, WALL)).forEach(t -> t.type = WALL);
+        this.replaceAll(DEAD_END, WALL);
+        this.stream().filter(t -> t.type == WALL).filter(t -> t.between(ROOM, ROOM)).forEach(t -> t.type = ROOM);
     }
 
     private Stream<DungeonTile> stream() {
-        return Stream.of(streamArray);
-    }
-
-    private Stream<DungeonTile> streamWithoutBorder() {
-        return this.stream().filter(t -> !this.isBorderOrBeyond(t.x, t.y));
+        return Stream.of(streamArray).filter(t -> !this.isBorderOrBeyond(t.x, t.y));
     }
 
     private List<DungeonTile> getAllTiles(int type) {
-        return this.streamWithoutBorder().filter(t -> t.type == type).collect(Collectors.toList());
+        return this.stream().filter(t -> t.type == type).collect(Collectors.toList());
     }
 
     private boolean isBorder(int x, int y) {
@@ -175,7 +182,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         int sm = 0b010101000;
         int wm = 0b010001010;
 
-        this.streamWithoutBorder().filter(t -> t.type >= PATH).forEach(tile -> {
+        this.stream().filter(t -> t.type >= PATH).forEach(tile -> {
             int mask = tile.scan(WALL);
             if (mask < 0) return;
 
@@ -192,8 +199,8 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         });
     }
 
-    private void replaceRandom(int count, byte type, byte newType) {
-        final List<DungeonTile> found = this.getAllTiles(type);
+    private void replaceRandom(int count, Stream<DungeonTile> stream, byte newType) {
+        final List<DungeonTile> found = stream.collect(Collectors.toList());
 
         int left = count;
         while (!found.isEmpty() && left > 0) {
@@ -226,7 +233,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 y = (int) levelPos.y;
                 if (this.isBeyond(x, y)) continue;
 
-                if (this.tiles[x][y].type == DEAD_END) continue;
+                if (this.tiles[x][y].type == LOOT) continue;
                 tiles[rx][ry] = (this.tiles[x][y].type == WALL ? TileType.WATER : TileType.GRASS).id;
             }
         }
@@ -269,6 +276,18 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             mask |= (tiles[x + 1][y - 1].type == type ? 0b000000001 : 0b000000000);
 
             return mask;
+        }
+
+        boolean between(byte t1, byte t2) {
+            if (DungeonChunkGenerator.this.isBorder(x, y)) return false;
+
+            byte left = tiles[x - 1][y].type;
+            byte right = tiles[x + 1][y].type;
+            if ((left == t1 && right == t2) || (left == t2 && right == t1)) return true;
+
+            byte top = tiles[x][y + 1].type;
+            byte down = tiles[x][y - 1].type;
+            return (top == t1 && down == t2) || (top == t2 && down == t1);
         }
     }
 }
