@@ -12,14 +12,23 @@ import java.util.stream.Stream;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 public class DungeonChunkGenerator implements ChunkGenerator {
+    public static final short RED = 0;
+    public static final short YELLOW = 1;
+    public static final short GREEN = 2;
+    public static final short BLUE = 3;
+    public static final short ORANGE = 4;
+    public static final short GRAY = 5;
+    public static final short PINK = 6;
+
     public static int minRoomCount = 5;
     public static int maxRoomCount = 25;
     public static int minRoomSize = 5;
     public static int maxRoomSize = 15;
+    public static float featuresPerChunk = 1.0f / 2.5f;
 
     private static final byte WALL = 0;
     private static final byte ROOM = 1;
-    private static final byte LOOT = 2;
+    private static final byte FEATURE = 2;
     private static final byte PATH = 3;
     private static final byte CROSS = 4;
     private static final byte T_CROSS = 5;
@@ -70,16 +79,18 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         this.generateRooms();
         this.characterizePaths();
 
-        //Place Loot
-        int l = (int) (chunkHeight * chunkWidth / 2.5f);
-        this.replaceRandom(l, this.stream().filter(t -> t.type == DEAD_END), LOOT);
-        this.replaceRandom(l, this.stream().filter(t -> t.type == ROOM).filter(t -> t.scan(ROOM) == 0b111111111), LOOT);
+        //Place Features
+        int l = (int) (chunkHeight * chunkWidth * featuresPerChunk);
+        this.replace(l, this.stream().filter(t -> t.type == DEAD_END), FEATURE);
+        this.replace(l, this.stream().filter(t -> t.type == ROOM).filter(t -> t.scan(ROOM) == 0b111111111), FEATURE);
 
         //Remove DeadEnds and homogenize Paths
         this.replaceAll(DEAD_END, WALL);
         this.stream().filter(t -> t.type >= PATH).filter(t -> t.between(ROOM, WALL)).forEach(t -> t.type = WALL);
         this.replaceAll(DEAD_END, WALL);
+
         this.stream().filter(t -> t.type == WALL).filter(t -> t.between(ROOM, ROOM)).forEach(t -> t.type = ROOM);
+        this.stream().filter(t -> t.type == PATH).filter(t -> t.between(ROOM, ROOM)).forEach(t -> t.type = ROOM);
     }
 
     private Stream<DungeonTile> stream() {
@@ -199,7 +210,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         });
     }
 
-    private void replaceRandom(int count, Stream<DungeonTile> stream, byte newType) {
+    private void replace(int count, Stream<DungeonTile> stream, byte newType) {
         final List<DungeonTile> found = stream.collect(Collectors.toList());
 
         int left = count;
@@ -223,7 +234,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     }
 
     @Override
-    public void populate(Chunk chunk, int[][] tiles) {
+    public void populate(Chunk chunk, int[][] tiles, short[][] variants) {
         Vector2f levelPos;
         int x, y;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
@@ -233,8 +244,27 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 y = (int) levelPos.y;
                 if (this.isBeyond(x, y)) continue;
 
-                if (this.tiles[x][y].type == LOOT) continue;
-                tiles[rx][ry] = (this.tiles[x][y].type == WALL ? TileType.WATER : TileType.GRASS).id;
+                TileType type;
+                short variant;
+                switch (this.tiles[x][y].type) {
+                    case FEATURE:
+                        type = TileType.MARKER;
+                        variant = RED;
+                        break;
+
+                    case WALL:
+                        type = TileType.STONE_WALL;
+                        variant = TileType.STONE_WALL.defaultVariant;
+                        break;
+
+                    default:
+                        type = TileType.COBBLESTONE;
+                        variant = TileType.COBBLESTONE.defaultVariant;
+                        break;
+                }
+
+                tiles[rx][ry] = type.id;
+                variants[rx][ry] = variant;
             }
         }
     }

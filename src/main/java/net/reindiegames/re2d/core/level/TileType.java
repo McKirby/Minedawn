@@ -12,6 +12,9 @@ public class TileType extends GameResource {
 
     public static TileType GRASS;
     public static TileType WATER;
+    public static TileType STONE_WALL;
+    public static TileType COBBLESTONE;
+    public static TileType MARKER;
 
     public static final int NO_TILING = 0;
     public static final int COMPLETE_TILING = 1;
@@ -41,6 +44,9 @@ public class TileType extends GameResource {
     private static void link() throws Exception {
         ReflectionUtil.setStatic(TileType.class, "GRASS", TileType.getByResource("grass.json"));
         ReflectionUtil.setStatic(TileType.class, "WATER", TileType.getByResource("water.json"));
+        ReflectionUtil.setStatic(TileType.class, "STONE_WALL", TileType.getByResource("stone_wall.json"));
+        ReflectionUtil.setStatic(TileType.class, "COBBLESTONE", TileType.getByResource("cobblestone.json"));
+        ReflectionUtil.setStatic(TileType.class, "MARKER", TileType.getByResource("marker.json"));
     }
 
     public static TileType getById(int id) {

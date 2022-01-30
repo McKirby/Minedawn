@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "id": 3,
+    "name": "Cobblestone"
+  },
+  "core": {
+    "tiling": 0
+  },
+  "client": {
+    "atlas": "TERRAIN_01",
+    "sprites": [
+      129
+    ]
+  },
+  "server": {
+  }
+}

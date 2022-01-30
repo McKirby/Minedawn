@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "id": 4,
+    "name": "Stone Wall"
+  },
+  "core": {
+    "tiling": 0
+  },
+  "client": {
+    "atlas": "TERRAIN_01",
+    "sprites": [
+      128
+    ]
+  },
+  "server": {
+  }
+}

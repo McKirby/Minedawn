@@ -51,7 +51,7 @@ class ClientCoreBridge {
                 TILE_ATLAS_MAP.put(type.id, atlas);
 
                 final JsonArray spriteArray = clientObject.get("sprites").getAsJsonArray();
-                if (spriteArray.size() != TileType.TILING_VARIANTS[type.getTiling()]) {
+                if (type.getTiling() > 0 && spriteArray.size() != TileType.TILING_VARIANTS[type.getTiling()]) {
                     throw new IllegalArgumentException("The Sprite-Count does not match the Tiling!");
                 }
 

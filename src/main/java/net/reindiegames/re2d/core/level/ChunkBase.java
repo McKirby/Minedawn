@@ -35,17 +35,22 @@ public class ChunkBase {
                 chunk = new Chunk(level, cx, cy);
 
                 final int[][] tiles = new int[CHUNK_SIZE][CHUNK_SIZE];
-                level.populate(chunk, tiles);
+                final short[][] variants = new short[CHUNK_SIZE][CHUNK_SIZE];
+                level.populate(chunk, tiles, variants);
 
                 Vector2f levelPos;
                 TileType type;
+                Tile tile;
                 for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
                     for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                         levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
                         if (tiles[rx][ry] <= 0) continue;
 
                         type = TileType.getById(tiles[rx][ry]);
-                        chunk.tiles[rx][ry] = new Tile(chunk.level, (int) levelPos.x, (int) levelPos.y, type);
+                        tile = new Tile(chunk.level, (int) levelPos.x, (int) levelPos.y, type);
+                        tile.variant = variants[rx][ry];
+
+                        chunk.tiles[rx][ry] = tile;
                     }
                 }
 

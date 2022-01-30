@@ -64,10 +64,11 @@ public class ResourceLevel extends GameResource implements Level {
     }
 
     @Override
-    public void populate(Chunk chunk, int[][] tiles) {
+    public void populate(Chunk chunk, int[][] tiles, short[][] variants) {
         for (int rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
             for (int ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
                 tiles[rx][ry] = TileType.GRASS.id;
+                variants[rx][ry] = TileType.GRASS.defaultVariant;
             }
         }
     }
