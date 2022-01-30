@@ -1,11 +1,9 @@
 package net.reindiegames.re2d.core.level;
 
+import net.reindiegames.re2d.core.Log;
 import org.joml.Vector2f;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,19 +18,17 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     public static final short GRAY = 5;
     public static final short PINK = 6;
 
-    public static int minRoomCount = 5;
-    public static int maxRoomCount = 25;
-    public static int minRoomSize = 5;
-    public static int maxRoomSize = 15;
+    public static int minRoomCount = 10;
+    public static int maxRoomCount = 20;
+    public static int minRoomSize = 10;
+    public static int maxRoomSize = 20;
     public static float featuresPerChunk = 1.0f / 2.5f;
 
-    private static final byte WALL = 0;
-    private static final byte ROOM = 1;
-    private static final byte FEATURE = 2;
-    private static final byte PATH = 3;
-    private static final byte CROSS = 4;
-    private static final byte T_CROSS = 5;
-    private static final byte DEAD_END = 6;
+    public static final byte WALL = 0;
+    public static final byte ROOM = 1;
+    public static final byte FEATURE = 2;
+    public static final byte PATH = 3;
+    public static final byte DEAD_END = 6;
 
     public final long seed;
     public final int width;
@@ -44,11 +40,15 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     private final DungeonTile[][] tiles;
     private final DungeonTile[] streamArray;
 
+    private final int rooms;
+    private int paths;
+
     public DungeonChunkGenerator(int w, int h) {
         this((long) (Math.random() * Integer.MAX_VALUE), w, h);
     }
 
-    public DungeonChunkGenerator(long seed, int w, int h) {
+    public DungeonChunkGenerator(long seed, int w, int h) throws ArrayIndexOutOfBoundsException {
+        Log.info("Generating Dungeon with Seed '" + seed + "'...");
         if (w <= maxRoomSize * 2)
             throw new IllegalArgumentException("The Width has to be at Minimum the double Room Size!");
         if (h <= maxRoomSize * 2)
@@ -74,6 +74,9 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             }
         }
 
+        this.rooms = minRoomSize + random.nextInt(maxRoomCount - minRoomCount);
+        this.paths = 0;
+
         //Generate Structures
         this.generateMaze();
         this.generateRooms();
@@ -81,19 +84,55 @@ public class DungeonChunkGenerator implements ChunkGenerator {
 
         //Place Features
         int l = (int) (chunkHeight * chunkWidth * featuresPerChunk);
-        this.replace(l, this.stream().filter(t -> t.type == DEAD_END), FEATURE);
-        this.replace(l, this.stream().filter(t -> t.type == ROOM).filter(t -> t.scan(ROOM) == 0b111111111), FEATURE);
+        this.replace(l / 2, this.stream().filter(t -> t.type == DEAD_END), FEATURE, false);
+        this.replace(l, this.stream().filter(t -> t.type == ROOM).filter(t -> t.scan(ROOM) == 0b111111111), FEATURE, false);
 
         //Remove DeadEnds and homogenize Paths
-        this.replaceAll(DEAD_END, WALL);
-        this.stream().filter(t -> t.type >= PATH).filter(t -> t.between(ROOM, WALL)).forEach(t -> t.type = WALL);
-        this.replaceAll(DEAD_END, WALL);
+        this.replaceAll(DEAD_END, WALL, true);
+        this.stream().filter(t -> t.type >= PATH).forEach(t -> {
+            if (t.between(ROOM, WALL).count() != 0) {
+                t.setWall();
+            }
+        });
+        this.replaceAll(DEAD_END, WALL, true);
 
-        this.stream().filter(t -> t.type == WALL).filter(t -> t.between(ROOM, ROOM)).forEach(t -> t.type = ROOM);
-        this.stream().filter(t -> t.type == PATH).filter(t -> t.between(ROOM, ROOM)).forEach(t -> t.type = ROOM);
+        this.stream().filter(t -> t.type == WALL).forEach(t -> {
+            t.between(ROOM, ROOM).filter(n -> n.type == ROOM).forEach(n -> t.setRoom(n.room));
+        });
+        this.stream().filter(t -> t.type >= PATH).forEach(t -> {
+            t.between(ROOM, ROOM).filter(n -> n.type == ROOM).forEach(n -> t.setRoom(n.room));
+        });
+
+        //Remove Paths that only connect the same Room and no Features
+        Set<Integer> connections = new HashSet<>();
+        for (int path = 0; path < paths; path++) {
+            connections.clear();
+
+            this.pathStream(path).forEach(t -> {
+                t.neighbours(false).filter(n -> n.type == ROOM || n.type == FEATURE).forEach(n -> {
+                    if (n.type == FEATURE) {
+                        connections.add(rooms + (n.y * width + n.x));
+                    } else {
+                        connections.add(n.room);
+                    }
+                });
+            });
+
+            if (connections.size() <= 1) {
+                this.pathStream(path).forEach(t -> {
+                    t.type = WALL;
+                    t.path = -1;
+                    t.room = -1;
+                });
+            }
+        }
+
+        this.stream().filter(t -> t.type == WALL && t.neighbours(true).noneMatch(n -> n.type == ROOM)).forEach(t -> {
+            t.between(PATH, PATH).forEach(n -> t.setPath(n.path));
+        });
     }
 
-    private Stream<DungeonTile> stream() {
+    public Stream<DungeonTile> stream() {
         return Stream.of(streamArray).filter(t -> !this.isBorderOrBeyond(t.x, t.y));
     }
 
@@ -168,11 +207,9 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     }
 
     private void generateRooms() {
-        int count = minRoomSize + random.nextInt(maxRoomCount - minRoomCount);
-
         int roomWidth, roomHeight;
         int sx, sy, x, y;
-        for (int room = 0; room < count; room++) {
+        for (int room = 0; room < rooms; room++) {
             roomWidth = minRoomSize + random.nextInt(maxRoomSize - minRoomSize);
             roomHeight = minRoomSize + random.nextInt(maxRoomSize - minRoomSize);
 
@@ -182,6 +219,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             for (x = sx; x < (sx + roomWidth); x++) {
                 for (y = sy; y < (sy + roomHeight); y++) {
                     tiles[x][y].type = ROOM;
+                    tiles[x][y].room = room;
                 }
             }
         }
@@ -194,33 +232,59 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         int wm = 0b010001010;
 
         this.stream().filter(t -> t.type >= PATH).forEach(tile -> {
+            tile.path = -1;
+
             int mask = tile.scan(WALL);
             if (mask < 0) return;
 
             if ((mask & nm) == nm || (mask & em) == em || (mask & sm) == sm || (mask & wm) == wm) {
                 tile.type = DEAD_END;
-                return;
+            } else {
+                tile.type = PATH;
             }
+        });
 
-            switch (mask) {
-                case 0b101000101 -> tile.type = CROSS;
-                case 0b111000101, 0b101001101, 0b101000111, 0b101100101 -> tile.type = T_CROSS;
-                default -> tile.type = PATH;
+        //Create Paths
+        paths = 0;
+        this.stream().filter(t -> t.type >= PATH).forEach(t -> {
+            if (this.spreadPath(t, paths)) {
+                paths++;
             }
         });
     }
 
-    private void replace(int count, Stream<DungeonTile> stream, byte newType) {
+    private boolean spreadPath(DungeonTile start, int path) {
+        if (start.path >= 0) return false;
+        start.path = path;
+
+        start.neighbours(false).filter(n -> n.type >= PATH).forEach(n -> {
+            this.spreadPath(n, path);
+        });
+        return true;
+    }
+
+    private Stream<DungeonTile> pathStream(int path) {
+        return this.stream().filter(t -> t.type >= PATH && t.path == path);
+    }
+
+    private void replace(int count, Stream<DungeonTile> stream, byte newType, boolean overwrite) {
         final List<DungeonTile> found = stream.collect(Collectors.toList());
 
         int left = count;
+        DungeonTile tile;
         while (!found.isEmpty() && left > 0) {
-            found.remove(random.nextInt(found.size())).type = newType;
+            tile = found.remove(random.nextInt(found.size()));
+            tile.type = newType;
             left--;
+
+            if (overwrite) {
+                tile.room = -1;
+                tile.path = -1;
+            }
         }
     }
 
-    private void replaceAll(byte type, byte newType) {
+    private void replaceAll(byte type, byte newType, boolean overwrite) {
         int found;
         do {
             this.characterizePaths();
@@ -229,6 +293,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             for (DungeonTile tile : this.getAllTiles(type)) {
                 tile.type = newType;
                 found++;
+
+                if (overwrite) {
+                    tile.path = -1;
+                    tile.room = -1;
+                }
             }
         } while (found > 0);
     }
@@ -244,9 +313,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 y = (int) levelPos.y;
                 if (this.isBeyond(x, y)) continue;
 
+                DungeonTile tile = this.tiles[x][y];
+
                 TileType type;
                 short variant;
-                switch (this.tiles[x][y].type) {
+                switch (tile.type) {
                     case FEATURE:
                         type = TileType.MARKER;
                         variant = RED;
@@ -278,15 +349,49 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         }
     }
 
-    private class DungeonTile {
-        final int x;
-        final int y;
-        byte type;
+    public class DungeonTile {
+        public final int x;
+        public final int y;
+        int room = 0;
+        int path = 0;
+        private byte type;
 
         DungeonTile(int x, int y, byte type) {
             this.x = x;
             this.y = y;
             this.type = type;
+            this.room = -1;
+            this.path = -1;
+        }
+
+        private void setWall() {
+            this.type = WALL;
+            this.room = -1;
+            this.path = -1;
+        }
+
+        public byte getType() {
+            return type;
+        }
+
+        public int getRoom() {
+            return room;
+        }
+
+        private void setRoom(int room) {
+            this.type = ROOM;
+            this.room = room;
+            this.path = -1;
+        }
+
+        public int getPath() {
+            return path;
+        }
+
+        private void setPath(int path) {
+            this.type = PATH;
+            this.room = -1;
+            this.path = path;
         }
 
         int scan(int type) {
@@ -308,16 +413,51 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             return mask;
         }
 
-        boolean between(byte t1, byte t2) {
-            if (DungeonChunkGenerator.this.isBorder(x, y)) return false;
+        Stream<DungeonTile> between(byte t1, byte t2) {
+            if (DungeonChunkGenerator.this.isBorder(x, y)) return Stream.of();
 
             byte left = tiles[x - 1][y].type;
             byte right = tiles[x + 1][y].type;
-            if ((left == t1 && right == t2) || (left == t2 && right == t1)) return true;
+            if ((left == t1 && right == t2) || (left == t2 && right == t1)) {
+                return Stream.of(tiles[x - 1][y], tiles[x + 1][y]);
+            }
 
             byte top = tiles[x][y + 1].type;
             byte down = tiles[x][y - 1].type;
-            return (top == t1 && down == t2) || (top == t2 && down == t1);
+            if ((top == t1 && down == t2) || (top == t2 && down == t1)) {
+                return Stream.of(tiles[x][y + 1], tiles[x][y - 1]);
+            } else {
+                return Stream.of();
+            }
+        }
+
+        Stream<DungeonTile> neighbours(boolean nine) {
+            if (DungeonChunkGenerator.this.isBorder(x, y)) return Stream.of();
+
+            DungeonTile[] dungeonTiles = null;
+            if (nine) {
+                dungeonTiles = new DungeonTile[] {
+                        tiles[x - 1][y + 1],
+                        tiles[x + 0][y + 1],
+                        tiles[x + 1][y + 1],
+
+                        tiles[x - 1][y + 0],
+                        tiles[x + 1][y + 0],
+
+                        tiles[x - 1][y - 1],
+                        tiles[x + 0][y - 1],
+                        tiles[x + 1][y - 1]
+                };
+            } else {
+                dungeonTiles = new DungeonTile[] {
+                        tiles[x + 0][y - 1],
+                        tiles[x + 1][y + 0],
+                        tiles[x + 0][y + 1],
+                        tiles[x - 1][y + 0],
+                };
+            }
+
+            return Stream.of(dungeonTiles);
         }
     }
 }

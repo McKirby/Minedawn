@@ -87,7 +87,7 @@ public class ClientContext extends GameContext {
         Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
             final Vector2f levelPos = Input.getLevelPosition(x, y);
-            currentLevel.setTileType(levelPos, button == GLFW.GLFW_MOUSE_BUTTON_1 ? TileType.WATER : TileType.GRASS);
+            //currentLevel.setTileType(levelPos, button == GLFW.GLFW_MOUSE_BUTTON_1 ? TileType.WATER : TileType.GRASS);
         }));
 
         Log.info("Loading Assets..");
@@ -102,7 +102,7 @@ public class ClientContext extends GameContext {
         if (!ClientCoreBridge.bridge()) throw new IllegalStateException("Could not Bridge between Core and Client!");
 
         Log.info("Loading Level...");
-        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(1337, 64, 64));
+        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(64, 64));
         //currentLevel = ResourceLevel.TEST_LEVEL;
     }
 
