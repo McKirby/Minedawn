@@ -18,10 +18,10 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     public static final short GRAY = 5;
     public static final short PINK = 6;
 
-    public static int minRoomCount = 10;
-    public static int maxRoomCount = 20;
-    public static int minRoomSize = 10;
-    public static int maxRoomSize = 20;
+    public static int minRoomCount = 4;
+    public static int maxRoomCount = 8;
+    public static int minRoomSize = 3;
+    public static int maxRoomSize = 9;
     public static float featuresPerChunk = 1.0f / 2.5f;
 
     public static final byte WALL = 0;
@@ -33,6 +33,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     public final long seed;
     public final int width;
     public final int height;
+    public final int scale;
     public final int chunkWidth;
     public final int chunkHeight;
 
@@ -43,11 +44,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     private final int rooms;
     private int paths;
 
-    public DungeonChunkGenerator(int w, int h) {
-        this((long) (Math.random() * Integer.MAX_VALUE), w, h);
+    public DungeonChunkGenerator(int w, int h, int scale) {
+        this((long) (Math.random() * Integer.MAX_VALUE), w, h, scale);
     }
 
-    public DungeonChunkGenerator(long seed, int w, int h) throws ArrayIndexOutOfBoundsException {
+    public DungeonChunkGenerator(long seed, int w, int h, int scale) {
         Log.info("Generating Dungeon with Seed '" + seed + "'...");
         if (w <= maxRoomSize * 2)
             throw new IllegalArgumentException("The Width has to be at Minimum the double Room Size!");
@@ -59,8 +60,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
 
         this.width = w + (1 - w % 2);
         this.height = h + (1 - h % 2);
-        this.chunkWidth = width / CHUNK_SIZE + (width % CHUNK_SIZE != 0 ? 1 : 0);
-        this.chunkHeight = height / CHUNK_SIZE + (height % CHUNK_SIZE != 0 ? 1 : 0);
+        this.scale = scale;
+        this.chunkWidth = (width * scale) / CHUNK_SIZE + (width % CHUNK_SIZE != 0 ? 1 : 0);
+        this.chunkHeight = (height * scale) / CHUNK_SIZE + (height % CHUNK_SIZE != 0 ? 1 : 0);
+        System.out.println(chunkWidth);
+        System.out.println(chunkHeight);
 
         this.tiles = new DungeonTile[width][height];
         this.streamArray = new DungeonTile[width * height];
@@ -305,16 +309,18 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     @Override
     public void populate(Chunk chunk, int[][] tiles, short[][] variants) {
         Vector2f levelPos;
-        int x, y;
+        int tx, ty, x, y;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                 levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
-                x = (int) levelPos.x;
-                y = (int) levelPos.y;
+                tx = (int) levelPos.x;
+                ty = (int) levelPos.y;
+                x = tx / scale;
+                y = ty / scale;
+
                 if (this.isBeyond(x, y)) continue;
 
                 DungeonTile tile = this.tiles[x][y];
-
                 TileType type;
                 short variant;
                 switch (tile.type) {

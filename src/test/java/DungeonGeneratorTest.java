@@ -9,9 +9,7 @@ public class DungeonGeneratorTest {
     public void integrity() {
         for (int i = 0; i < 100; i++) {
             try {
-
-                final DungeonChunkGenerator generator = new DungeonChunkGenerator(63, 63);
-
+                final DungeonChunkGenerator generator = new DungeonChunkGenerator(63, 63, 1);
                 generator.stream().forEach(t -> {
                     switch (t.getType()) {
                         case WALL:
@@ -42,7 +40,7 @@ public class DungeonGeneratorTest {
                             break;
                     }
                 });
-            } catch (ArrayIndexOutOfBoundsException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
