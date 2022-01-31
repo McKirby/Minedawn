@@ -63,8 +63,6 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         this.scale = scale;
         this.chunkWidth = (width * scale) / CHUNK_SIZE + (width % CHUNK_SIZE != 0 ? 1 : 0);
         this.chunkHeight = (height * scale) / CHUNK_SIZE + (height % CHUNK_SIZE != 0 ? 1 : 0);
-        System.out.println(chunkWidth);
-        System.out.println(chunkHeight);
 
         this.tiles = new DungeonTile[width][height];
         this.streamArray = new DungeonTile[width * height];
