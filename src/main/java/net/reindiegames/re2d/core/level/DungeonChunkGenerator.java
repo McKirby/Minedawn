@@ -121,17 +121,14 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             });
 
             if (connections.size() <= 1) {
-                this.pathStream(path).forEach(t -> {
-                    t.type = WALL;
-                    t.path = -1;
-                    t.room = -1;
-                });
+                this.pathStream(path).forEach(DungeonTile::setWall);
             }
         }
 
         this.stream().filter(t -> t.type == WALL && t.neighbours(true).noneMatch(n -> n.type == ROOM)).forEach(t -> {
             t.between(PATH, PATH).forEach(n -> t.setPath(n.path));
         });
+        this.characterizePaths();
     }
 
     public Stream<DungeonTile> stream() {
@@ -317,25 +314,19 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 y = ty / scale;
 
                 if (this.isBeyond(x, y)) continue;
-
                 DungeonTile tile = this.tiles[x][y];
+
                 TileType type;
                 short variant;
                 switch (tile.type) {
-                    case FEATURE:
-                        type = TileType.MARKER;
-                        variant = RED;
-                        break;
-
-                    case WALL:
+                    case WALL -> {
                         type = TileType.STONE_WALL;
                         variant = TileType.STONE_WALL.defaultVariant;
-                        break;
-
-                    default:
+                    }
+                    default -> {
                         type = TileType.COBBLESTONE;
                         variant = TileType.COBBLESTONE.defaultVariant;
-                        break;
+                    }
                 }
 
                 tiles[rx][ry] = type.id;
@@ -368,7 +359,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             this.path = -1;
         }
 
-        private void setWall() {
+        public void setWall() {
             this.type = WALL;
             this.room = -1;
             this.path = -1;

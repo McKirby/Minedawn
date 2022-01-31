@@ -118,7 +118,7 @@ abstract class Shader {
         final Matrix4f matrix = new Matrix4f();
         matrix.translate(pos.x * tileScale, pos.y * tileScale, 0.0f);
         matrix.rotate(rotation, new Vector3f(0.0f, 0.0f, 1.0f));
-        matrix.scale(scale.x * tileScale, scale.y * tileScale, 0.0f);
+        matrix.scale(scale.x * tileScale, scale.y * tileScale, 1.0f);
 
         Shader.toFloatArray(matrix, dest);
     }

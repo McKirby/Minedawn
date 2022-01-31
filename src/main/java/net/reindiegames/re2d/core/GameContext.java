@@ -2,7 +2,7 @@ package net.reindiegames.re2d.core;
 
 import net.reindiegames.re2d.client.ClientContext;
 import net.reindiegames.re2d.core.game.DayNightCircle;
-import net.reindiegames.re2d.core.game.tasks.Task;
+import net.reindiegames.re2d.core.game.MaterialType;
 import net.reindiegames.re2d.core.level.ResourceLevel;
 import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.level.entity.EntityType;
@@ -32,9 +32,9 @@ public abstract class GameContext {
         Log.info("Loading Libraries...");
 
         Log.info("Loading Core...");
+        if (!GameResource.loadAll(MaterialType.class)) throw new IllegalStateException("Cannot load Materials!");
         if (!GameResource.loadAll(TileType.class)) throw new IllegalStateException("Cannot load Tiles!");
         if (!GameResource.loadAll(EntityType.class)) throw new IllegalStateException("Cannot load Entities!");
-        if (!GameResource.loadAll(Task.class)) throw new IllegalStateException("Cannot load Tasks!");
         if (!GameResource.loadAll(ResourceLevel.class)) throw new IllegalStateException("Cannot load Levels!");
 
         try {

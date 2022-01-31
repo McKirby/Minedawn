@@ -1,7 +1,11 @@
 package net.reindiegames.re2d.core.level;
 
+import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.level.entity.EntitySentient;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+
+import java.lang.reflect.Constructor;
 
 public interface Level extends ChunkPopulator {
     public abstract ChunkBase getChunkBase();
@@ -36,5 +40,22 @@ public interface Level extends ChunkPopulator {
         tile.variant = variant;
         chunk.tiles[relative.x][relative.y] = tile;
         chunk.changed = true;
+    }
+
+    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2f pos) {
+        Constructor<E> constructor;
+        try {
+            constructor = implClazz.getDeclaredConstructor(Level.class, Vector2f.class);
+            constructor.setAccessible(true);
+
+            E entity = constructor.newInstance(this, pos);
+            this.getChunkBase().addEntity(entity);
+
+            return entity;
+        } catch (ReflectiveOperationException e) {
+            Log.error("Can not spawn Entity (" + e.getMessage() + ")!");
+            e.printStackTrace();
+            return null;
+        }
     }
 }

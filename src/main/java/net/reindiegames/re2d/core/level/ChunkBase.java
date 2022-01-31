@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.core.level;
 
+import net.reindiegames.re2d.core.level.entity.Entity;
 import org.joml.Vector2f;
 
 import java.util.HashMap;
@@ -15,11 +16,17 @@ public class ChunkBase {
 
     private final Map<Integer, Map<Integer, Chunk>> chunkMap;
     private final Set<Chunk> loadedChunks;
+    private final Set<Entity> entities;
+
+    private int nextEntityId;
 
     protected ChunkBase(Level level) {
         this.level = level;
         this.chunkMap = new HashMap<>();
         this.loadedChunks = new HashSet<>();
+        this.entities = new HashSet<>();
+
+        this.nextEntityId = 0;
     }
 
     public Chunk getChunk(int cx, int cy, boolean generate, boolean load) {
@@ -78,6 +85,28 @@ public class ChunkBase {
     public void unloadChunk(Chunk chunk) {
         synchronized (loadedChunks) {
             loadedChunks.remove(chunk);
+        }
+    }
+
+    public int nextEntityId() {
+        return nextEntityId++;
+    }
+
+    public void forEachEntity(Consumer<Entity> entityConsumer) {
+        synchronized (entities) {
+            entities.forEach(entityConsumer);
+        }
+    }
+
+    protected void addEntity(Entity entity) {
+        synchronized (entities) {
+            entities.add(entity);
+        }
+    }
+
+    private void removeEntity(Entity entity) {
+        synchronized (entities) {
+            entities.remove(entity);
         }
     }
 }

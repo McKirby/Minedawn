@@ -2,7 +2,11 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
-import net.reindiegames.re2d.core.level.*;
+import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
+import net.reindiegames.re2d.core.level.GeneratedLevel;
+import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.entity.EntityPlayer;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -28,7 +32,9 @@ public class ClientContext extends GameContext {
     protected static float ctx;
     protected static float cty;
     protected static float speed = 1.0f;
+
     protected static Level currentLevel;
+    protected static EntityPlayer player;
 
     private ClientContext() {
     }
@@ -95,8 +101,6 @@ public class ClientContext extends GameContext {
 
         Log.info("Setting up RendTer-Pipelines...");
         levelRenderPipeline = new LevelRenderPipeline();
-        ctx = 28.0f;
-        cty = 28.0f;
 
         Log.info("Bridging the Client to the Core...");
         if (!ClientCoreBridge.bridge()) throw new IllegalStateException("Could not Bridge between Core and Client!");
@@ -104,7 +108,7 @@ public class ClientContext extends GameContext {
         Log.info("Loading Level...");
         int scale = 3;
         currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
-        //currentLevel = ResourceLevel.TEST_LEVEL;
+        player = currentLevel.spawn(EntityPlayer.class, new Vector2f(0.0f, 0.0f));
     }
 
     @Disposer
@@ -131,10 +135,14 @@ public class ClientContext extends GameContext {
     @Override
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
-        if (Input.MOVE_NORTH.isPressed()) cty += speed * delta;
-        if (Input.MOVE_SOUTH.isPressed()) cty -= speed * delta;
-        if (Input.MOVE_EAST.isPressed()) ctx += speed * delta;
-        if (Input.MOVE_WEST.isPressed()) ctx -= speed * delta;
+        if (Input.MOVE_NORTH.isPressed()) player.pos.y += speed * delta;
+        if (Input.MOVE_SOUTH.isPressed()) player.pos.y -= speed * delta;
+        if (Input.MOVE_EAST.isPressed()) player.pos.x += speed * delta;
+        if (Input.MOVE_WEST.isPressed()) player.pos.x -= speed * delta;
+        player.changed = true;
+
+        ctx = player.pos.x + player.size.x * 0.5f;
+        cty = player.pos.y + player.size.y * 0.5f;
 
         if (Input.ZOOM_IN.isPressed()) {
             tileScale = Math.max(Math.min(tileScale - 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
@@ -145,7 +153,6 @@ public class ClientContext extends GameContext {
             tileScale = Math.max(Math.min(tileScale + 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
             tileScaleChanged = true;
         }
-
 
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);

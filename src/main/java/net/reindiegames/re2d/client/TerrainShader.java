@@ -11,6 +11,7 @@ class TerrainShader extends Shader {
     private int transformationLocation;
     private int viewLocation;
     private int projectionLocation;
+    private int depthLocation;
     private int textureSamplerLocation;
 
     protected TerrainShader() throws IllegalArgumentException {
@@ -22,7 +23,12 @@ class TerrainShader extends Shader {
         this.transformationLocation = super.getUniformLocation("transformation");
         this.viewLocation = super.getUniformLocation("view");
         this.projectionLocation = super.getUniformLocation("projection");
+        this.depthLocation = super.getUniformLocation("depth");
         this.textureSamplerLocation = super.getUniformLocation("texture_sampler");
+    }
+
+    protected void loadDepth(float depth) {
+        super.loadFloat(depthLocation, depth);
     }
 
     protected void loadTransformation(float[] transformation) {

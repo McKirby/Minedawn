@@ -71,6 +71,7 @@ public interface IO {
         try {
             String line = null;
             while ((line = reader.readLine()) != null) {
+                if (!line.contains(".")) continue;
                 resources.add(line);
             }
         } catch (IOException e) {

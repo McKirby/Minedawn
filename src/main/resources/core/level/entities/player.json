@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "id": 1,
+    "name": "Player"
+  },
+  "client": {
+    "atlas": "TERRAIN_01",
+    "sprites": [
+      [1.0, 160, 161]
+    ]
+  }
+}

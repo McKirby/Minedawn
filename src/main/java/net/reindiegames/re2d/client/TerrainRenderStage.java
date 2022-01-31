@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.Transformable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -52,6 +53,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
 
     @Override
     protected void process(long totalTicks, Level level) {
+        shader.loadDepth(0.0f);
         level.getChunkBase().forEachLoadedChunk((chunk -> {
             Map<Integer, Mesh[]> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
             Mesh[] meshes = xMap.getOrDefault(chunk.cy, null);
@@ -64,24 +66,18 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
                 meshes = ClientCoreBridge.generateTerrainMesh(chunk);
                 xMap.put(chunk.cy, meshes);
             }
-            Mesh mesh = meshes[(int) (totalTicks % meshes.length)];
-            GL30.glBindVertexArray(mesh.vao);
-
-            if (chunk.changed || tileScaleChanged) {
-                Shader.generateTransformation(chunk.transformation, chunk.pos, chunk.size, chunk.rotation);
-            }
-
-            shader.loadTransformation(chunk.transformation);
-            chunk.changed = false;
-
-            if (debug) {
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
-                GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
-            } else {
-                GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
-                GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
-            }
+            this.renderMesh(chunk, meshes[(int) (totalTicks % meshes.length)]);
         }));
+
+        shader.loadDepth(1.0f);
+        level.getChunkBase().forEachEntity(entity -> {
+            RenderCompound compound = ClientCoreBridge.ENTITY_COMPOUND_MAP.get(entity.type.id);
+            RenderCompound.AnimationParameters p = compound.animation[entity.state];
+
+            this.renderMesh(entity,
+                    compound.sprites[entity.state][p.frames == 1 ? 0 : (int) ((totalTicks / p.ticks) % p.frames)]
+            );
+        });
     }
 
     @Override
@@ -93,5 +89,24 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
 
     @Override
     protected void yield() {
+    }
+
+    private final void renderMesh(Transformable t, Mesh mesh) {
+        GL30.glBindVertexArray(mesh.vao);
+
+        if (t.changed || tileScaleChanged) {
+            Shader.generateTransformation(t.transformation, t.pos, t.size, t.rotation);
+        }
+
+        shader.loadTransformation(t.transformation);
+        t.changed = false;
+
+        if (debug) {
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);
+            GL11.glDrawElements(GL11.GL_LINES, mesh.lineIndices.length, GL11.GL_UNSIGNED_INT, 0);
+        } else {
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.triangleIndicesVbo);
+            GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.triangleIndices.length, GL11.GL_UNSIGNED_INT, 0);
+        }
     }
 }

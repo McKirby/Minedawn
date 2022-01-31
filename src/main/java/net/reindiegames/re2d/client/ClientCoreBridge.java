@@ -4,10 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.CoreParameters;
+import net.reindiegames.re2d.core.GameResource;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.Tile;
 import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.entity.EntityType;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -19,9 +21,8 @@ import static net.reindiegames.re2d.client.Mesh.*;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 class ClientCoreBridge {
-    protected static final Map<Integer, Map<Short, Mesh[]>> TILE_SPRITE_MAP = new HashMap<>();
-    protected static final Map<Integer, Map<Short, AnimationParameters>> TILE_ANIMATION_MAP = new HashMap<>();
-    protected static final Map<Integer, TextureAtlas> TILE_ATLAS_MAP = new HashMap<>();
+    protected static final Map<Integer, RenderCompound> TILE_COMPOUND_MAP = new HashMap<>();
+    protected static final Map<Integer, RenderCompound> ENTITY_COMPOUND_MAP = new HashMap<>();
 
     protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE;
     protected static final FloatBuffer vertexBuffer;
@@ -39,7 +40,60 @@ class ClientCoreBridge {
 
     public static boolean bridge() {
         if (!ClientCoreBridge.bridgeTiles()) return false;
+        if (!ClientCoreBridge.bridgeEntities()) return false;
         return true;
+    }
+
+    private static void loadCompound(
+            GameResource resource, JsonObject source, String prefix, Map<Integer, RenderCompound> target
+    ) throws IllegalArgumentException {
+        final RenderCompound compound = new RenderCompound(resource);
+        compound.atlas = TextureAtlas.valueOf(source.get("atlas").getAsString());
+
+        final JsonArray spriteArray = source.get("sprites").getAsJsonArray();
+        compound.sprites = new Mesh[spriteArray.size()][];
+        compound.animation = new RenderCompound.AnimationParameters[spriteArray.size()];
+
+        for (short variant = 0; variant < spriteArray.size(); variant++) {
+            final JsonElement element = spriteArray.get(variant);
+
+            int animationFrames, animationTicks;
+            int spriteIndex, column, row;
+            float[] texCoords;
+
+            if (element.isJsonPrimitive()) {
+                compound.sprites[variant] = new Mesh[1];
+                animationFrames = 1;
+                animationTicks = 1;
+
+                spriteIndex = element.getAsInt();
+
+                column = spriteIndex % compound.atlas.columns;
+                row = spriteIndex / compound.atlas.columns;
+                texCoords = compound.atlas.getTextureCoords(column, row);
+
+                compound.sprites[variant][0] = Mesh.create(prefix + resource.name + "_0", texCoords);
+            } else {
+                final JsonArray subSpriteArray = spriteArray.get(variant).getAsJsonArray();
+                compound.sprites[variant] = new Mesh[subSpriteArray.size() - 1];
+
+                animationTicks = (int) (CoreParameters.TICK_RATE * subSpriteArray.get(0).getAsFloat());
+                animationFrames = compound.sprites[variant].length;
+
+                for (int i = 1; i < subSpriteArray.size(); i++) {
+                    spriteIndex = subSpriteArray.get(i).getAsInt();
+
+                    column = spriteIndex % compound.atlas.columns;
+                    row = spriteIndex / compound.atlas.columns;
+                    texCoords = compound.atlas.getTextureCoords(column, row);
+
+                    compound.sprites[variant][i - 1] = Mesh.create(resource + resource.name + "_" + i, texCoords);
+                }
+            }
+            compound.animation[variant] = new RenderCompound.AnimationParameters(animationFrames, animationTicks);
+        }
+
+        target.put(resource.id, compound);
     }
 
     private static boolean bridgeTiles() {
@@ -47,58 +101,22 @@ class ClientCoreBridge {
         for (TileType type : types) {
             try {
                 final JsonObject clientObject = type.loadResourceObject().get("client").getAsJsonObject();
-                final TextureAtlas atlas = TextureAtlas.valueOf(clientObject.get("atlas").getAsString());
-                TILE_ATLAS_MAP.put(type.id, atlas);
+                ClientCoreBridge.loadCompound(type, clientObject, "sprite_tile_", TILE_COMPOUND_MAP);
+            } catch (IllegalArgumentException e) {
+                Log.error("Could not bridge to Tile '" + type.name + "'(" + e.getMessage() + ")!");
+                return false;
+            }
+        }
 
-                final JsonArray spriteArray = clientObject.get("sprites").getAsJsonArray();
-                if (type.getTiling() > 0 && spriteArray.size() != TileType.TILING_VARIANTS[type.getTiling()]) {
-                    throw new IllegalArgumentException("The Sprite-Count does not match the Tiling!");
-                }
+        return true;
+    }
 
-                final Map<Short, Mesh[]> variantMeshMap = new HashMap<>();
-                final Map<Short, AnimationParameters> variantAnimationTicksMap = new HashMap<>();
-                for (short variant = 0; variant < spriteArray.size(); variant++) {
-                    final JsonElement element = spriteArray.get(variant);
-
-                    Mesh[] meshes;
-                    int animationFrames, animationTicks;
-                    int spriteIndex, column, row;
-                    float[] texCoords;
-
-                    if (element.isJsonPrimitive()) {
-                        meshes = new Mesh[1];
-                        animationFrames = 1;
-                        animationTicks = 1;
-
-                        spriteIndex = element.getAsInt();
-
-                        column = spriteIndex % atlas.columns;
-                        row = spriteIndex / atlas.columns;
-                        texCoords = atlas.getTextureCoords(column, row);
-
-                        meshes[0] = Mesh.create("sprite_tile_" + type.name + "_0", texCoords);
-                    } else {
-                        final JsonArray subSpriteArray = spriteArray.get(variant).getAsJsonArray();
-                        meshes = new Mesh[subSpriteArray.size() - 1];
-
-                        animationTicks = (int) (CoreParameters.TICK_RATE * subSpriteArray.get(0).getAsFloat());
-                        animationFrames = meshes.length;
-
-                        for (int i = 1; i < subSpriteArray.size(); i++) {
-                            spriteIndex = subSpriteArray.get(i).getAsInt();
-
-                            column = spriteIndex % atlas.columns;
-                            row = spriteIndex / atlas.columns;
-                            texCoords = atlas.getTextureCoords(column, row);
-
-                            meshes[i - 1] = Mesh.create("sprite_tile_" + type.name + "_" + i, texCoords);
-                        }
-                    }
-                    variantMeshMap.put(variant, meshes);
-                    variantAnimationTicksMap.put(variant, new AnimationParameters(animationFrames, animationTicks));
-                }
-                TILE_SPRITE_MAP.put(type.id, variantMeshMap);
-                TILE_ANIMATION_MAP.put(type.id, variantAnimationTicksMap);
+    private static boolean bridgeEntities() {
+        final EntityType[] types = EntityType.getTypes();
+        for (EntityType type : types) {
+            try {
+                final JsonObject clientObject = type.loadResourceObject().get("client").getAsJsonObject();
+                ClientCoreBridge.loadCompound(type, clientObject, "entity_", ENTITY_COMPOUND_MAP);
             } catch (IllegalArgumentException e) {
                 Log.error("Could not bridge to Tile '" + type.name + "'(" + e.getMessage() + ")!");
                 return false;
@@ -119,7 +137,7 @@ class ClientCoreBridge {
                 tile = c.tiles[rx][ry];
                 if (tile == null) continue;
 
-                animationDuration = TILE_ANIMATION_MAP.get(tile.type.id).get(tile.variant).duration;
+                animationDuration = TILE_COMPOUND_MAP.get(tile.type.id).animation[tile.variant].duration;
                 if (animationDuration > maxAnimationDuration) {
                     maxAnimationDuration = animationDuration;
                 }
@@ -145,16 +163,18 @@ class ClientCoreBridge {
 
         int offset = 0;
 
+        RenderCompound compound;
         Tile tile;
-        AnimationParameters p;
+        RenderCompound.AnimationParameters p;
         Mesh tileMesh;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                 tile = chunk.tiles[rx][ry];
                 if (tile == null) continue;
 
-                p = TILE_ANIMATION_MAP.get(tile.type.id).get(tile.variant);
-                tileMesh = TILE_SPRITE_MAP.get(tile.type.id).get(tile.variant)[(tick / p.animationTicks) % p.frames];
+                compound = TILE_COMPOUND_MAP.get(tile.type.id);
+                p = compound.animation[tile.variant];
+                tileMesh = compound.sprites[tile.variant][(tick / p.ticks) % p.frames];
 
                 for (int i = 0; i < tileMesh.vertices.length; i += 2) {
                     vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
@@ -192,15 +212,4 @@ class ClientCoreBridge {
         return new Mesh("chunk_" + chunk.cx + "_" + chunk.cy + "_" + tick, v, t, triIndices, liIndices);
     }
 
-    static class AnimationParameters {
-        protected final int frames;
-        protected final int animationTicks;
-        protected final int duration;
-
-        protected AnimationParameters(int frames, int animationTicks) {
-            this.frames = frames;
-            this.animationTicks = animationTicks;
-            this.duration = frames * animationTicks;
-        }
-    }
 }

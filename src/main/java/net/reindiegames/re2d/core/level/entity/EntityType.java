@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EntityType extends GameResource {
-    public static final String RESOURCE_PATH = "core/entities/";
+    public static final String RESOURCE_PATH = "core/level/entities/";
 
     public static EntityType PLAYER;
 
