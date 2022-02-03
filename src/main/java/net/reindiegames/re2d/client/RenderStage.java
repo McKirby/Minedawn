@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.level.ResourceLevel;
+import org.joml.Vector2f;
 
 abstract class RenderStage<S extends Shader, O> {
     protected final S shader;
@@ -9,9 +10,9 @@ abstract class RenderStage<S extends Shader, O> {
         this.shader = shader;
     }
 
-    protected final void render(O renderSource, long window, float ctx, float cty, long totalTicks) {
+    protected final void render(O renderSource, long window, Vector2f c, long totalTicks) {
         this.load();
-        this.prepare(window, ctx, cty);
+        this.prepare(window, c);
         this.process(totalTicks, renderSource);
         this.finish();
         this.yield();
@@ -19,7 +20,7 @@ abstract class RenderStage<S extends Shader, O> {
 
     protected abstract void load();
 
-    protected abstract void prepare(long window, float ctx, float cty);
+    protected abstract void prepare(long window, Vector2f c);
 
     protected abstract void process(long totalTicks, O renderSource);
 

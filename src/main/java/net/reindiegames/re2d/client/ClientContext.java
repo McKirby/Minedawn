@@ -5,6 +5,7 @@ import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -27,8 +28,6 @@ public class ClientContext extends GameContext {
 
     protected static LevelRenderPipeline levelRenderPipeline;
     protected static long window = -1;
-    protected static float ctx;
-    protected static float cty;
     protected static float speed = 1.0f;
 
     protected static Level currentLevel;
@@ -91,7 +90,13 @@ public class ClientContext extends GameContext {
         Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
             final Vector2f goal = Input.getLevelPosition(x, y);
-            player.navigator.navigate(goal);
+
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
+                player.navigator.navigate(goal);
+            } else {
+                player.level.setTileType(goal, TileType.GRASS);
+            }
+
         }));
 
         Log.info("Loading Assets..");
@@ -136,10 +141,7 @@ public class ClientContext extends GameContext {
         GLFW.glfwPollEvents();
 
         currentLevel.asyncTick(totalTicks, delta);
-        ctx = player.getPosition().x + player.size.x * 0.5f;
-        cty = player.getPosition().y + player.size.y * 0.5f;
-
-        levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
+        levelRenderPipeline.render(currentLevel, window, player.getCenter(), totalTicks);
         GLFW.glfwSwapBuffers(window);
         tileScaleChanged = false;
     }

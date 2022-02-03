@@ -17,12 +17,12 @@ public abstract class Entity extends Collidable {
     @Deprecated
     public short state;
 
-    protected Entity(EntityType type, Level level, Vector2f pos, Vector2f size) {
-        super(level, pos, size, BodyType.DYNAMIC, 10.0f);
+    protected Entity(EntityType type, Level level, Vector2f pos, float size) {
+        super(level, pos, new Vector2f(size, size), BodyType.DYNAMIC, 10.0f);
         this.type = type;
         this.entityId = level.getChunkBase().nextEntityId();
 
-        level.getChunkBase().createBoundingSphere(body, 0.5f - ENTITY_PADDING);
+        level.getChunkBase().createBoundingSphere(body, (size / 2.0f) - ENTITY_PADDING);
 
         this.action = 0;
         this.state = 1;

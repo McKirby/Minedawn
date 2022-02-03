@@ -7,7 +7,7 @@ public class EntityLiving extends EntitySentient {
     public int health;
     public int maxHealth;
 
-    protected EntityLiving(EntityType type, Level level, Vector2f pos, Vector2f size) {
+    protected EntityLiving(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
         this.maxHealth = 20;
         this.health = maxHealth;

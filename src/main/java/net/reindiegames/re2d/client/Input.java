@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static net.reindiegames.re2d.client.ClientContext.ctx;
-import static net.reindiegames.re2d.client.ClientContext.cty;
 import static net.reindiegames.re2d.client.ClientParameters.*;
 
 enum Input {
@@ -85,9 +83,10 @@ enum Input {
         float xDiff = mouseX - (windowWidth / 2.0f);
         float yDiff = -(mouseY - (windowHeight / 2.0f));
 
+        final Vector2f playerCenter = ClientContext.player.getCenter();
         final Vector2f pos = new Vector2f(0.0f, 0.0f);
-        pos.x = ctx + (xDiff / tileScale);
-        pos.y = cty + (yDiff / tileScale);
+        pos.x = playerCenter.x + (xDiff / tileScale);
+        pos.y = playerCenter.y + (yDiff / tileScale);
 
         return pos;
     }

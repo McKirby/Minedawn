@@ -2,6 +2,7 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.Transformable;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -30,7 +31,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     protected void load() {
     }
 
-    protected void prepare(long window, float ctx, float cty) {
+    protected void prepare(long window, Vector2f c) {
         GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer);
         windowWidth = widthBuffer.get(0);
         windowHeight = heightBuffer.get(0);
@@ -47,7 +48,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         shader.bind();
-        shader.loadProjectionView(ctx, cty, windowWidth, windowHeight);
+        shader.loadProjectionView(c, windowWidth, windowHeight);
         shader.loadTextureBank(0);
     }
 

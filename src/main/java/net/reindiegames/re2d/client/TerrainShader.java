@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.client;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 
 import static net.reindiegames.re2d.client.ClientParameters.tileScale;
 
@@ -35,13 +36,13 @@ class TerrainShader extends Shader {
         super.loadMatrixArray(transformationLocation, transformation);
     }
 
-    protected void loadProjectionView(float ctx, float cty, float width, float height) {
+    protected void loadProjectionView(Vector2f c, float width, float height) {
         final Matrix4f projection = new Matrix4f();
         projection.ortho(0.0f, width, 0.0f, height, -1.0f, 1.0f);
         super.loadMatrix4f(projectionLocation, projection);
 
         final Matrix4f view = new Matrix4f();
-        view.translate(width / 2.0f + -ctx * tileScale, height / 2.0f + -cty * tileScale, 0.0f);
+        view.translate(width / 2.0f + -c.x * tileScale, height / 2.0f + -c.y * tileScale, 0.0f);
         super.loadMatrix4f(viewLocation, view);
     }
 
