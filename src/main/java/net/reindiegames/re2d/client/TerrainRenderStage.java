@@ -72,11 +72,16 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
         shader.loadDepth(1.0f);
         level.getChunkBase().forEachEntity(entity -> {
             RenderCompound compound = ClientCoreBridge.ENTITY_COMPOUND_MAP.get(entity.type.id);
-            RenderCompound.AnimationParameters p = compound.animation[entity.state];
 
-            this.renderMesh(entity,
-                    compound.sprites[entity.state][p.frames == 1 ? 0 : (int) ((totalTicks / p.ticks) % p.frames)]
-            );
+            RenderCompound.AnimationParameters p = compound.animation[entity.action];
+            int frame;
+            if (entity.state >= 0) {
+                frame = entity.state;
+            } else {
+                frame = p.frames == 1 ? 0 : (int) ((totalTicks / p.ticks) % p.frames);
+            }
+
+            this.renderMesh(entity, compound.sprites[entity.action][frame]);
         });
     }
 

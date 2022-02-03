@@ -1,5 +1,7 @@
 package net.reindiegames.re2d.core.level;
 
+import org.joml.Vector2i;
+
 import java.util.Random;
 
 public class GeneratedLevel implements Level {
@@ -7,6 +9,8 @@ public class GeneratedLevel implements Level {
 
     protected final ChunkBase chunkBase;
     protected final Random random;
+
+    protected final Vector2i spawn;
     protected final ChunkGenerator chunkGenerator;
 
     public GeneratedLevel(long seed, ChunkGenerator generator) {
@@ -16,6 +20,7 @@ public class GeneratedLevel implements Level {
 
         this.chunkGenerator = generator;
         chunkGenerator.initialize(this);
+        this.spawn = chunkGenerator.getSpawn();
     }
 
     @Override
@@ -26,5 +31,10 @@ public class GeneratedLevel implements Level {
     @Override
     public ChunkBase getChunkBase() {
         return chunkBase;
+    }
+
+    @Override
+    public Vector2i getSpawn() {
+        return spawn;
     }
 }

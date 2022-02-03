@@ -1,14 +1,17 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.EntitySentient;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 import java.lang.reflect.Constructor;
 
-public interface Level extends ChunkPopulator {
+public interface Level extends ChunkPopulator, Tickable {
     public abstract ChunkBase getChunkBase();
+
+    public abstract Vector2i getSpawn();
 
     public default Chunk getChunk(Vector2f levelPos) {
         return this.getChunk(levelPos, false, false);
@@ -36,10 +39,20 @@ public interface Level extends ChunkPopulator {
         if (chunk == null) return;
 
         final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
-        final Tile tile = new Tile(this, (int) levelPos.x, (int) levelPos.y, type);
-        tile.variant = variant;
-        chunk.tiles[relative.x][relative.y] = tile;
+        final Tile newTile = new Tile(this, (int) levelPos.x, (int) levelPos.y, type);
+        newTile.variant = variant;
+
+        final Tile oldTile = chunk.tiles[relative.x][relative.y];
+        if (oldTile != null) {
+            oldTile.dispose();
+        }
+
+        chunk.tiles[relative.x][relative.y] = newTile;
         chunk.changed = true;
+    }
+
+    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2i pos) {
+        return this.spawn(implClazz, new Vector2f(pos.x, pos.y));
     }
 
     public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2f pos) {
@@ -57,5 +70,15 @@ public interface Level extends ChunkPopulator {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public default void syncTick(long totalTicks, float delta) {
+        this.getChunkBase().syncTick(totalTicks, delta);
+    }
+
+    @Override
+    public default void asyncTick(long totalTicks, float delta) {
+        this.getChunkBase().asyncTick(totalTicks, delta);
     }
 }

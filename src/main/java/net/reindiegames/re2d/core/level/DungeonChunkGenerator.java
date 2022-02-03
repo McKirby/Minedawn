@@ -2,6 +2,7 @@ package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Log;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     public final int scale;
     public final int chunkWidth;
     public final int chunkHeight;
+
+    protected final Vector2i spawn;
 
     private final Random random;
     private final DungeonTile[][] tiles;
@@ -129,6 +132,10 @@ public class DungeonChunkGenerator implements ChunkGenerator {
             t.between(PATH, PATH).forEach(n -> t.setPath(n.path));
         });
         this.characterizePaths();
+
+        final List<DungeonTile> features = this.stream().filter(t -> t.type == PATH).collect(Collectors.toList());
+        final DungeonTile spawnTile = features.get(random.nextInt(features.size()));
+        this.spawn = new Vector2i(spawnTile.x * scale, spawnTile.y * scale);
     }
 
     public Stream<DungeonTile> stream() {
@@ -333,6 +340,11 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 variants[rx][ry] = variant;
             }
         }
+    }
+
+    @Override
+    public Vector2i getSpawn() {
+        return spawn;
     }
 
     @Override

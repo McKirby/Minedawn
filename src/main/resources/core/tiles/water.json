@@ -4,7 +4,8 @@
     "name": "Water"
   },
   "core": {
-    "tiling": 0
+    "tiling": 0,
+    "solid": true
   },
   "client": {
     "atlas": "TERRAIN_01",

@@ -78,11 +78,14 @@ enum TextureAtlas {
         float xStep = 1.0f / ((float) columns);
         float yStep = 1.0f / ((float) rows);
 
+        float xe = (1.0f / (columns * SPRITE_PIXEL_SIZE)) * 0.1f;
+        float ye = (1.0f / (rows * SPRITE_PIXEL_SIZE)) * 0.1f;
+
         return new float[] {
-                xStart + 0 * xStep, yStart + 0 * yStep,
-                xStart + 1 * xStep, yStart + 0 * yStep,
-                xStart + 0 * xStep, yStart + 1 * yStep,
-                xStart + 1 * xStep, yStart + 1 * yStep,
+                xStart + 0 * xStep + xe, yStart + 0 * yStep + ye,
+                xStart + 1 * xStep - xe, yStart + 0 * yStep + ye,
+                xStart + 0 * xStep + xe, yStart + 1 * yStep - ye,
+                xStart + 1 * xStep - xe, yStart + 1 * yStep - ye,
         };
     }
 

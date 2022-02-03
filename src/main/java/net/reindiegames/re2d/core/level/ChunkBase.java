@@ -1,6 +1,11 @@
 package net.reindiegames.re2d.core.level;
 
+import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.Entity;
+import org.jbox2d.collision.shapes.CircleShape;
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.*;
 import org.joml.Vector2f;
 
 import java.util.HashMap;
@@ -11,8 +16,9 @@ import java.util.function.Consumer;
 
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
-public class ChunkBase {
+public class ChunkBase implements Tickable {
     public final Level level;
+    protected final World world;
 
     private final Map<Integer, Map<Integer, Chunk>> chunkMap;
     private final Set<Chunk> loadedChunks;
@@ -22,9 +28,11 @@ public class ChunkBase {
 
     protected ChunkBase(Level level) {
         this.level = level;
+
         this.chunkMap = new HashMap<>();
         this.loadedChunks = new HashSet<>();
         this.entities = new HashSet<>();
+        this.world = new World(new Vec2(0.0f, 0.0f));
 
         this.nextEntityId = 0;
     }
@@ -70,6 +78,31 @@ public class ChunkBase {
         }
     }
 
+    public Body createBody(BodyType type, float tx, float ty) {
+        final BodyDef bodyDef = new BodyDef();
+        bodyDef.type = type;
+        bodyDef.position = new Vec2(tx, ty);
+        return world.createBody(bodyDef);
+    }
+
+    public Fixture createBoundingBox(Body body, float width, float height) {
+        final PolygonShape shape = new PolygonShape();
+        shape.setAsBox(width / 2.0f, height / 2.0f);
+
+        final FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        return body.createFixture(fixtureDef);
+    }
+
+    public Fixture createBoundingSphere(Body body, float radius) {
+        final CircleShape shape = new CircleShape();
+        shape.setRadius(radius);
+
+        final FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        return body.createFixture(fixtureDef);
+    }
+
     public void forEachLoadedChunk(Consumer<Chunk> chunkConsumer) {
         synchronized (loadedChunks) {
             loadedChunks.forEach(chunkConsumer);
@@ -108,5 +141,16 @@ public class ChunkBase {
         synchronized (entities) {
             entities.remove(entity);
         }
+    }
+
+    @Override
+    public void syncTick(long totalTicks, float delta) {
+        this.forEachEntity(entity -> entity.syncTick(totalTicks, delta));
+    }
+
+    @Override
+    public void asyncTick(long totalTicks, float delta) {
+        world.step(delta, 20, 40);
+        this.forEachEntity(entity -> entity.asyncTick(totalTicks, delta));
     }
 }

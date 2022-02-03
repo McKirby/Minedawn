@@ -34,6 +34,7 @@ public class TileType extends GameResource {
 
     protected int tiling;
     protected short defaultVariant;
+    protected boolean solid;
 
     private TileType(String resource) {
         super(resource);
@@ -74,6 +75,7 @@ public class TileType extends GameResource {
         final JsonObject core = source.get("core").getAsJsonObject();
         this.tiling = core.get("tiling").getAsInt();
         this.defaultVariant = DEFAULT_VARIANT[tiling];
+        this.solid = core.get("solid").getAsBoolean();
     }
 
     @Override

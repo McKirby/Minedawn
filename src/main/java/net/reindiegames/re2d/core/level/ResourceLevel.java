@@ -3,6 +3,7 @@ package net.reindiegames.re2d.core.level;
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.GameResource;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
+import org.joml.Vector2i;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +62,11 @@ public class ResourceLevel extends GameResource implements Level {
     @Override
     public ChunkBase getChunkBase() {
         return chunkBase;
+    }
+
+    @Override
+    public Vector2i getSpawn() {
+        return new Vector2i(0, 0);
     }
 
     @Override

@@ -108,7 +108,7 @@ public class ClientContext extends GameContext {
         Log.info("Loading Level...");
         int scale = 3;
         currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
-        player = currentLevel.spawn(EntityPlayer.class, new Vector2f(0.0f, 0.0f));
+        player = currentLevel.spawn(EntityPlayer.class, currentLevel.getSpawn());
     }
 
     @Disposer
@@ -130,19 +130,21 @@ public class ClientContext extends GameContext {
     @Override
     protected void syncTick(long totalTicks, float delta) {
         super.syncTick(totalTicks, delta);
+        currentLevel.syncTick(totalTicks, delta);
     }
 
     @Override
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
-        if (Input.MOVE_NORTH.isPressed()) player.pos.y += speed * delta;
-        if (Input.MOVE_SOUTH.isPressed()) player.pos.y -= speed * delta;
-        if (Input.MOVE_EAST.isPressed()) player.pos.x += speed * delta;
-        if (Input.MOVE_WEST.isPressed()) player.pos.x -= speed * delta;
-        player.changed = true;
 
-        ctx = player.pos.x + player.size.x * 0.5f;
-        cty = player.pos.y + player.size.y * 0.5f;
+        float dx = 0.0f;
+        float dy = 0.0f;
+
+        if (Input.MOVE_NORTH.isPressed()) dy += speed * delta;
+        if (Input.MOVE_SOUTH.isPressed()) dy -= speed * delta;
+        if (Input.MOVE_EAST.isPressed()) dx += speed * delta;
+        if (Input.MOVE_WEST.isPressed()) dx -= speed * delta;
+        player.move(dx, dy);
 
         if (Input.ZOOM_IN.isPressed()) {
             tileScale = Math.max(Math.min(tileScale - 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
@@ -153,6 +155,10 @@ public class ClientContext extends GameContext {
             tileScale = Math.max(Math.min(tileScale + 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
             tileScaleChanged = true;
         }
+
+        currentLevel.asyncTick(totalTicks, delta);
+        ctx = player.pos.x + player.size.x * 0.5f;
+        cty = player.pos.y + player.size.y * 0.5f;
 
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);
