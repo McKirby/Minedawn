@@ -6,7 +6,6 @@ import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.TileType;
-import net.reindiegames.re2d.core.level.entity.EntityPlayer;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -34,7 +33,7 @@ public class ClientContext extends GameContext {
     protected static float speed = 1.0f;
 
     protected static Level currentLevel;
-    protected static EntityPlayer player;
+    protected static EntityClientPlayer player;
 
     private ClientContext() {
     }
@@ -99,7 +98,7 @@ public class ClientContext extends GameContext {
         Log.info("Loading Assets..");
         if (!TextureAtlas.setup()) throw new IllegalStateException("Failed to load all Texture-Atlases!");
 
-        Log.info("Setting up RendTer-Pipelines...");
+        Log.info("Setting up Render-Pipelines...");
         levelRenderPipeline = new LevelRenderPipeline();
 
         Log.info("Bridging the Client to the Core...");
@@ -108,7 +107,7 @@ public class ClientContext extends GameContext {
         Log.info("Loading Level...");
         int scale = 3;
         currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
-        player = currentLevel.spawn(EntityPlayer.class, currentLevel.getSpawn());
+        player = currentLevel.spawn(EntityClientPlayer.class, currentLevel.getSpawn());
     }
 
     @Disposer
@@ -137,31 +136,13 @@ public class ClientContext extends GameContext {
     protected void asyncTick(long totalTicks, float delta) {
         GLFW.glfwPollEvents();
 
-        float dx = 0.0f;
-        float dy = 0.0f;
-
-        if (Input.MOVE_NORTH.isPressed()) dy += speed * delta;
-        if (Input.MOVE_SOUTH.isPressed()) dy -= speed * delta;
-        if (Input.MOVE_EAST.isPressed()) dx += speed * delta;
-        if (Input.MOVE_WEST.isPressed()) dx -= speed * delta;
-        player.move(dx, dy);
-
-        if (Input.ZOOM_IN.isPressed()) {
-            tileScale = Math.max(Math.min(tileScale - 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
-            tileScaleChanged = true;
-        }
-
-        if (Input.ZOOM_OUT.isPressed()) {
-            tileScale = Math.max(Math.min(tileScale + 1, MAX_TILE_PIXEL_SIZE), MIN_TILE_PIXEL_SIZE);
-            tileScaleChanged = true;
-        }
-
         currentLevel.asyncTick(totalTicks, delta);
-        ctx = player.pos.x + player.size.x * 0.5f;
-        cty = player.pos.y + player.size.y * 0.5f;
+        ctx = player.getPosition().x + player.size.x * 0.5f;
+        cty = player.getPosition().y + player.size.y * 0.5f;
 
         levelRenderPipeline.render(currentLevel, window, ctx, cty, totalTicks);
         GLFW.glfwSwapBuffers(window);
+        tileScaleChanged = false;
     }
 
     @Override

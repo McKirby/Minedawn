@@ -12,10 +12,15 @@ public class Chunk extends Transformable {
     public final Tile[][] tiles;
 
     protected Chunk(Level level, int cx, int cy) {
-        super(CoordinateSystems.chunkToLevel(cx, cy), new Vector2f(CHUNK_SIZE, CHUNK_SIZE), 0.0f);
+        super(new Vector2f(CHUNK_SIZE, CHUNK_SIZE));
         this.level = level;
         this.cx = cx;
         this.cy = cy;
         this.tiles = new Tile[CHUNK_SIZE][CHUNK_SIZE];
+    }
+
+    @Override
+    public Vector2f getPosition() {
+        return CoordinateSystems.chunkToLevel(cx, cy);
     }
 }

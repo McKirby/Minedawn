@@ -150,7 +150,7 @@ public class ChunkBase implements Tickable {
 
     @Override
     public void asyncTick(long totalTicks, float delta) {
-        world.step(delta, 20, 40);
+        world.step(delta, Level.VELOCITY_PRECISION, Level.MOVEMENT_PRECISION);
         this.forEachEntity(entity -> entity.asyncTick(totalTicks, delta));
     }
 }

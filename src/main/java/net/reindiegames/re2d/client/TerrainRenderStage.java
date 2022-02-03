@@ -99,8 +99,9 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     private final void renderMesh(Transformable t, Mesh mesh) {
         GL30.glBindVertexArray(mesh.vao);
 
+
         if (t.changed || tileScaleChanged) {
-            Shader.generateTransformation(t.transformation, t.pos, t.size, t.rotation);
+            Shader.generateTransformation(t.transformation, t.getPosition(), t.size, t.getRotation());
         }
 
         shader.loadTransformation(t.transformation);
