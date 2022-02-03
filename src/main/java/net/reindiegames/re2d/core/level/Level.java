@@ -17,13 +17,17 @@ public interface Level extends ChunkPopulator, Tickable {
 
     public abstract Vector2i getSpawn();
 
-    public default Chunk getChunk(Vector2f levelPos) {
-        return this.getChunk(levelPos, false, false);
+    public default Chunk getChunk(Vector2i tilePos, boolean generate, boolean load) {
+        return this.getChunk(CoordinateSystems.levelTileToLevel(tilePos), generate, load);
     }
 
     public default Chunk getChunk(Vector2f levelPos, boolean generate, boolean load) {
         final Vector2i chunkPos = CoordinateSystems.levelToChunk(levelPos);
         return this.getChunkBase().getChunk(chunkPos.x, chunkPos.y, generate, load);
+    }
+
+    public default Tile getTile(Vector2i tilePos) {
+        return this.getTile(CoordinateSystems.levelTileToLevel(tilePos));
     }
 
     public default Tile getTile(Vector2f levelPos) {
@@ -35,15 +39,23 @@ public interface Level extends ChunkPopulator, Tickable {
     }
 
     public default void setTileType(Vector2f levelPos, TileType type) {
-        this.setTileType(levelPos, type, type.defaultVariant);
+        this.setTileType(CoordinateSystems.levelToLevelTile(levelPos), type, type.defaultVariant);
     }
 
     public default void setTileType(Vector2f levelPos, TileType type, short variant) {
-        final Chunk chunk = this.getChunk(levelPos, false, false);
+        this.setTileType(CoordinateSystems.levelToLevelTile(levelPos), type, variant);
+    }
+
+    public default void setTileType(Vector2i tilePos, TileType type) {
+        this.setTileType(tilePos, type, type.defaultVariant);
+    }
+
+    public default void setTileType(Vector2i tilePos, TileType type, short variant) {
+        final Chunk chunk = this.getChunk(tilePos, false, false);
         if (chunk == null) return;
 
-        final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
-        final Tile newTile = new Tile(this, (int) levelPos.x, (int) levelPos.y, type);
+        final Vector2i relative = CoordinateSystems.levelToChunkRelative(tilePos);
+        final Tile newTile = new Tile(this, tilePos.x, tilePos.y, type);
         newTile.variant = variant;
 
         final Tile oldTile = chunk.tiles[relative.x][relative.y];
@@ -55,17 +67,17 @@ public interface Level extends ChunkPopulator, Tickable {
         chunk.changed = true;
     }
 
-    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2i pos) {
-        return this.spawn(implClazz, new Vector2f(pos.x, pos.y));
+    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2i tilePos) {
+        return this.spawn(implClazz, CoordinateSystems.levelTileToLevel(tilePos));
     }
 
-    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2f pos) {
+    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2f levelPos) {
         Constructor<E> constructor;
         try {
             constructor = implClazz.getDeclaredConstructor(Level.class, Vector2f.class);
             constructor.setAccessible(true);
 
-            E entity = constructor.newInstance(this, pos);
+            E entity = constructor.newInstance(this, levelPos);
             this.getChunkBase().addEntity(entity);
 
             return entity;

@@ -6,6 +6,7 @@ import net.reindiegames.re2d.core.level.Tile;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
+import java.text.NumberFormat;
 import java.util.*;
 
 public class Navigator {
@@ -45,10 +46,12 @@ public class Navigator {
         this.stopNavigation();
 
         final Level level = entity.level;
-        final Vector2f start = entity.getPosition();
+        final Vector2i start = entity.getCenterTilePosition();
         final PriorityQueue<Node> openList = new PriorityQueue<Node>();
 
         final Node startNode = this.getNode(level, (int) start.x, (int) start.y);
+        if (startNode == null) return false;
+
         startNode.cost = 0.0f;
         openList.add(startNode);
 

@@ -7,6 +7,18 @@ public final class CoordinateSystems {
     private CoordinateSystems() {
     }
 
+    public static Vector2i levelToLevelTile(Vector2f levelPos) {
+        return new Vector2i((int) levelPos.x, (int) levelPos.y);
+    }
+
+    public static Vector2f levelTileToLevel(Vector2i tilePos) {
+        return new Vector2f(tilePos.x, tilePos.y);
+    }
+
+    public static Vector2i levelToChunk(Vector2i tilePos) {
+        return CoordinateSystems.levelToChunk(CoordinateSystems.levelTileToLevel(tilePos));
+    }
+
     public static Vector2i levelToChunk(Vector2f levelPos) {
         final Vector2i vec = new Vector2i();
         if (levelPos.x >= 0) {
@@ -25,6 +37,10 @@ public final class CoordinateSystems {
 
     public static Vector2f chunkToLevel(int cx, int cy) {
         return new Vector2f(cx * Chunk.CHUNK_SIZE, cy * Chunk.CHUNK_SIZE);
+    }
+
+    public static Vector2i levelToChunkRelative(Vector2i tilePos) {
+        return CoordinateSystems.levelToChunkRelative(CoordinateSystems.levelTileToLevel(tilePos));
     }
 
     public static Vector2i levelToChunkRelative(Vector2f levelPos) {

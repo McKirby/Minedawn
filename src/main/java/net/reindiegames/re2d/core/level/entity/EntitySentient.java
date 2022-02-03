@@ -14,9 +14,10 @@ public class EntitySentient extends Entity {
 
     @Override
     public void asyncTick(long totalTicks, float delta) {
+        super.asyncTick(totalTicks, delta);
+
         Vector2i nextWaypoint = navigator.nextWaypoint();
         if (nextWaypoint != null) {
-
             Vector2f pos = this.getPosition();
             float dx = nextWaypoint.x - pos.x;
             float dy = nextWaypoint.y - pos.y;
@@ -28,6 +29,5 @@ public class EntitySentient extends Entity {
                 }
             }
         }
-        super.asyncTick(totalTicks, delta);
     }
 }
