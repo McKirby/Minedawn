@@ -6,6 +6,8 @@ import org.jbox2d.dynamics.BodyType;
 import org.joml.Vector2f;
 
 public abstract class Entity extends Collidable {
+    public static final float ENTITY_PADDING = 0.1f;
+
     public final EntityType type;
     public final int entityId;
 
@@ -20,7 +22,7 @@ public abstract class Entity extends Collidable {
         this.type = type;
         this.entityId = level.getChunkBase().nextEntityId();
 
-        level.getChunkBase().createBoundingSphere(body, 0.5f);
+        level.getChunkBase().createBoundingSphere(body, 0.5f - ENTITY_PADDING);
 
         this.action = 0;
         this.state = 1;

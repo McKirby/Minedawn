@@ -1,7 +1,6 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.CoreParameters;
-import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.EntitySentient;

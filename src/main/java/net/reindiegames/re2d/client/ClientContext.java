@@ -5,7 +5,6 @@ import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
-import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -91,8 +90,8 @@ public class ClientContext extends GameContext {
         }));
         Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
-            final Vector2f levelPos = Input.getLevelPosition(x, y);
-            currentLevel.setTileType(levelPos, button == GLFW.GLFW_MOUSE_BUTTON_1 ? TileType.WATER : TileType.GRASS);
+            final Vector2f goal = Input.getLevelPosition(x, y);
+            player.navigator.navigate(goal);
         }));
 
         Log.info("Loading Assets..");

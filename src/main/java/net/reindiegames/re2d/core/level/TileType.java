@@ -70,6 +70,10 @@ public class TileType extends GameResource {
         return defaultVariant;
     }
 
+    public boolean isSolid() {
+        return solid;
+    }
+
     @Override
     public void load(JsonObject source) {
         final JsonObject core = source.get("core").getAsJsonObject();
