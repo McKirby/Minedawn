@@ -60,7 +60,7 @@ public interface Level extends ChunkPopulator, Tickable {
 
         final Tile oldTile = chunk.tiles[relative.x][relative.y];
         if (oldTile != null) {
-            oldTile.dispose();
+            oldTile.removePhysics();
         }
 
         chunk.tiles[relative.x][relative.y] = newTile;

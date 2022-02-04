@@ -58,7 +58,6 @@ public class ClientContext extends GameContext {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1);
             IntBuffer pHeight = stack.mallocInt(1);
-
             GLFW.glfwGetWindowSize(window, pWidth, pHeight);
             ClientParameters.windowWidth = pWidth.get();
             ClientParameters.windowHeight = pHeight.get();
@@ -91,12 +90,22 @@ public class ClientContext extends GameContext {
             if (!pressed) return;
             final Vector2f goal = Input.getLevelPosition(x, y);
 
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1) {
-                player.navigator.navigate(goal);
-            } else {
-                player.level.setTileType(goal, TileType.GRASS);
-            }
+            switch (button) {
+                case GLFW.GLFW_MOUSE_BUTTON_1 -> {
+                    player.navigator.navigate(goal);
+                }
 
+                case GLFW.GLFW_MOUSE_BUTTON_2 -> {
+                    player.level.setTileType(goal, TileType.COBBLESTONE);
+                }
+
+                case GLFW.GLFW_MOUSE_BUTTON_3 -> {
+                    player.level.setTileType(goal, TileType.STONE_WALL);
+                }
+
+                default -> {
+                }
+            }
         }));
 
         Log.info("Loading Assets..");
@@ -110,7 +119,7 @@ public class ClientContext extends GameContext {
 
         Log.info("Loading Level...");
         int scale = 3;
-        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
+        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(1699408110L, 10 * scale, 10 * scale, scale));
         player = currentLevel.spawn(EntityClientPlayer.class, currentLevel.getSpawn());
     }
 

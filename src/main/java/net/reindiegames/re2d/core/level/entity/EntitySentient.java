@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -29,5 +30,18 @@ public class EntitySentient extends Entity {
         }
 
         super.asyncTick(totalTicks, delta);
+    }
+
+    @Override
+    public void touch(ICollidable object) {
+    }
+
+    @Override
+    public void release(ICollidable object) {
+    }
+
+    @Override
+    public boolean collidesWith(ICollidable object) {
+        return true;
     }
 }

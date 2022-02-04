@@ -2,10 +2,14 @@ package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.Entity;
+import org.jbox2d.callbacks.ContactImpulse;
+import org.jbox2d.callbacks.ContactListener;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.Contact;
 import org.joml.Vector2f;
 
 import java.util.HashMap;
@@ -33,6 +37,38 @@ public class ChunkBase implements Tickable {
         this.loadedChunks = new HashSet<>();
         this.entities = new HashSet<>();
         this.world = new World(new Vec2(0.0f, 0.0f));
+
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void beginContact(Contact contact) {
+                ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
+                ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
+
+                a.touch(b);
+                b.touch(a);
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+                ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
+                ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
+
+                a.release(b);
+                b.release(a);
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold manifold) {
+                ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
+                ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
+
+                contact.setEnabled(a.collidesWith(b) && b.collidesWith(a));
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse contactImpulse) {
+            }
+        });
 
         this.nextEntityId = 0;
     }
@@ -78,14 +114,15 @@ public class ChunkBase implements Tickable {
         }
     }
 
-    public Body createBody(BodyType type, float tx, float ty) {
+    public Body createBody(ICollidable source, BodyType type, float tx, float ty) {
         final BodyDef bodyDef = new BodyDef();
         bodyDef.type = type;
         bodyDef.position = new Vec2(tx, ty);
+        bodyDef.userData = source;
         return world.createBody(bodyDef);
     }
 
-    public Fixture createBoundingBox(Body body, float width, float height, float padding) {
+    public Fixture createBoundingBox(ICollidable source, Body body, float width, float height, float padding) {
         float hw = width / 2.0f;
         float hh = height / 2.0f;
 
@@ -94,10 +131,11 @@ public class ChunkBase implements Tickable {
 
         final FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
+        fixtureDef.userData = source;
         return body.createFixture(fixtureDef);
     }
 
-    public Fixture createBoundingSphere(Body body, float diameter, float padding) {
+    public Fixture createBoundingSphere(ICollidable source, Body body, float diameter, float padding) {
         float radius = diameter / 2.0f;
 
         final CircleShape shape = new CircleShape();
@@ -107,6 +145,7 @@ public class ChunkBase implements Tickable {
 
         final FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
+        fixtureDef.userData = source;
         return body.createFixture(fixtureDef);
     }
 

@@ -1,11 +1,11 @@
 package net.reindiegames.re2d.core.level.entity;
 
-import net.reindiegames.re2d.core.level.Collidable;
+import net.reindiegames.re2d.core.level.ACollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.jbox2d.dynamics.BodyType;
 import org.joml.Vector2f;
 
-public abstract class Entity extends Collidable {
+public abstract class Entity extends ACollidable {
     public static final float ENTITY_PADDING = 0.1f;
 
     public final EntityType type;
@@ -22,7 +22,7 @@ public abstract class Entity extends Collidable {
         this.type = type;
         this.entityId = level.getChunkBase().nextEntityId();
 
-        level.getChunkBase().createBoundingSphere(body, size, ENTITY_PADDING);
+        level.getChunkBase().createBoundingSphere(this, body, size, ENTITY_PADDING);
 
         this.action = 0;
         this.state = 1;

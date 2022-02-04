@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.entity.EntityPlayer;
 import org.joml.Vector2f;

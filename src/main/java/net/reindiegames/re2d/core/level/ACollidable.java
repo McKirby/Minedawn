@@ -9,7 +9,7 @@ import org.joml.Vector2f;
 import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 import static net.reindiegames.re2d.core.level.Level.VELOCITY_PRECISION;
 
-public abstract class Collidable extends Transformable implements Tickable {
+public abstract class ACollidable extends Transformable implements Tickable, ICollidable {
     protected static final float SPEED_FACTOR = VELOCITY_PRECISION * ((float) TICK_RATE / (float) VELOCITY_PRECISION);
 
     public final Level level;
@@ -18,23 +18,23 @@ public abstract class Collidable extends Transformable implements Tickable {
     private float defaultSpeedThrottle;
     private float maxSpeed;
 
-    protected Collidable(Level l, Vector2f pos, Vector2f size, BodyType type, float maxSpeed) {
+    protected ACollidable(Level l, Vector2f pos, Vector2f size, BodyType type, float maxSpeed) {
         this(l, pos, size, type, 1.0f, maxSpeed);
     }
 
-    protected Collidable(Level l, Vector2f p, Vector2f s, BodyType t, float defaultSpeedThrottle, float maxSpeed) {
+    protected ACollidable(Level l, Vector2f p, Vector2f s, BodyType t, float speedThrottle, float maxSpeed) {
         super(s);
         this.level = l;
 
-        this.defaultSpeedThrottle = defaultSpeedThrottle;
+        this.defaultSpeedThrottle = speedThrottle;
         this.maxSpeed = maxSpeed;
 
         if (t == null) {
             this.body = null;
         } else {
-            this.body = l.getChunkBase().createBody(t, p.x, p.y);
+            this.body = l.getChunkBase().createBody(this, t, p.x, p.y);
             body.m_userData = this;
-            body.m_linearDamping = defaultSpeedThrottle;
+            body.m_linearDamping = speedThrottle;
         }
     }
 
@@ -84,6 +84,16 @@ public abstract class Collidable extends Transformable implements Tickable {
 
     public final boolean isMoving() {
         return this.getVelocity().lengthSquared() > 0;
+    }
+
+    @Override
+    public final Level getLevel() {
+        return level;
+    }
+
+    @Override
+    public final Body getBody() {
+        return body;
     }
 
     @Override
