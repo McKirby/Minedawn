@@ -14,8 +14,6 @@ public class EntitySentient extends Entity {
 
     @Override
     public void asyncTick(long totalTicks, float delta) {
-        super.asyncTick(totalTicks, delta);
-
         Vector2i nextWaypoint = navigator.nextWaypoint();
         if (nextWaypoint != null) {
             Vector2f pos = this.getCenter();
@@ -23,11 +21,13 @@ public class EntitySentient extends Entity {
             float dy = (nextWaypoint.y + 0.5f) - pos.y;
             this.move(dx, dy);
 
-            if (new Vector2f(dx, dy).length() <= 0.1f) {
+            if (new Vector2f(dx, dy).length() <= ENTITY_PADDING) {
                 if (navigator.progressIndex()) {
                     navigator.stopNavigation();
                 }
             }
         }
+
+        super.asyncTick(totalTicks, delta);
     }
 }

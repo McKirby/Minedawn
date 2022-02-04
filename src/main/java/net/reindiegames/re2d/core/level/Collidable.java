@@ -39,21 +39,21 @@ public abstract class Collidable extends Transformable implements Tickable {
     }
 
     @Override
-    public Vector2f getPosition() {
+    public final Vector2f getPosition() {
         final Vec2 pos = body.getPosition();
         return new Vector2f(pos.x, pos.y);
     }
 
-    public Vector2f getVelocity() {
+    public final Vector2f getVelocity() {
         final Vec2 velocity = body.getLinearVelocity();
         return new Vector2f(velocity.x, velocity.y);
     }
 
-    public float getSpeed() {
+    public final float getSpeed() {
         return this.getVelocity().length() * SPEED_FACTOR;
     }
 
-    protected void clampVelocity() {
+    protected final void clampVelocity() {
         if (this.getSpeed() > maxSpeed) {
             final Vec2 velocity = body.getLinearVelocity();
             velocity.normalize();
@@ -61,15 +61,15 @@ public abstract class Collidable extends Transformable implements Tickable {
         }
     }
 
-    protected void throttleVelocity() {
+    protected final void throttleVelocity() {
         this.throttleVelocity(defaultSpeedThrottle);
     }
 
-    protected void throttleVelocity(float throttle) {
+    protected final void throttleVelocity(float throttle) {
         body.m_linearDamping = throttle;
     }
 
-    public void move(float dx, float dy) {
+    public final void move(float dx, float dy) {
         this.throttleVelocity(0.0f);
 
         final Vec2 dir = new Vec2(dx, dy);
@@ -78,11 +78,11 @@ public abstract class Collidable extends Transformable implements Tickable {
         this.clampVelocity();
     }
 
-    public void halt() {
+    public final void halt() {
         this.throttleVelocity();
     }
 
-    public boolean isMoving() {
+    public final boolean isMoving() {
         return this.getVelocity().lengthSquared() > 0;
     }
 

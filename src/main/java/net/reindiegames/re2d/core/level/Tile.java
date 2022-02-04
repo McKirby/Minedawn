@@ -22,7 +22,7 @@ public class Tile {
 
         if (type.solid) {
             this.body = level.getChunkBase().createBody(BodyType.STATIC, tx, ty);
-            level.getChunkBase().createBoundingBox(body, 1.0f, 1.0f);
+            level.getChunkBase().createBoundingBox(body, 1.0f, 1.0f, 0.0f);
         } else {
             this.body = null;
         }

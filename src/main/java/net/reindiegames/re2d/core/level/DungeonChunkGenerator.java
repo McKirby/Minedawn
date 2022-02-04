@@ -133,9 +133,14 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         });
         this.characterizePaths();
 
-        final List<DungeonTile> features = this.stream().filter(t -> t.type == PATH).collect(Collectors.toList());
-        final DungeonTile spawnTile = features.get(random.nextInt(features.size()));
-        this.spawn = new Vector2i(spawnTile.x * scale, spawnTile.y * scale);
+        final List<DungeonTile> features = this.stream().filter(t -> t.type == ROOM).collect(Collectors.toList());
+        if(!features.isEmpty()) {
+            final DungeonTile spawnTile = features.get(random.nextInt(features.size()));
+            this.spawn = new Vector2i(spawnTile.x * scale, spawnTile.y * scale);
+        } else {
+            Log.error("Could not find any suitable Spawn!");
+            this.spawn = new Vector2i(0, 0);
+        }
     }
 
     public Stream<DungeonTile> stream() {

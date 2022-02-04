@@ -22,7 +22,7 @@ public abstract class Entity extends Collidable {
         this.type = type;
         this.entityId = level.getChunkBase().nextEntityId();
 
-        level.getChunkBase().createBoundingSphere(body, (size / 2.0f) - ENTITY_PADDING);
+        level.getChunkBase().createBoundingSphere(body, size, ENTITY_PADDING);
 
         this.action = 0;
         this.state = 1;

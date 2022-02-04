@@ -85,18 +85,25 @@ public class ChunkBase implements Tickable {
         return world.createBody(bodyDef);
     }
 
-    public Fixture createBoundingBox(Body body, float width, float height) {
+    public Fixture createBoundingBox(Body body, float width, float height, float padding) {
+        float hw = width / 2.0f;
+        float hh = height / 2.0f;
+
         final PolygonShape shape = new PolygonShape();
-        shape.setAsBox(width / 2.0f, height / 2.0f);
+        shape.setAsBox(hw - padding, hh - padding, new Vec2(hw, hh), 0.0f);
 
         final FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         return body.createFixture(fixtureDef);
     }
 
-    public Fixture createBoundingSphere(Body body, float radius) {
+    public Fixture createBoundingSphere(Body body, float diameter, float padding) {
+        float radius = diameter / 2.0f;
+
         final CircleShape shape = new CircleShape();
-        shape.setRadius(radius);
+        shape.setRadius(radius - padding);
+        shape.m_p.x = radius;
+        shape.m_p.y = radius;
 
         final FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
