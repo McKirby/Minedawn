@@ -19,13 +19,13 @@ public class GrowableTile extends TileEntity {
     private short growState;
     private final short maxGrowState;
 
-    protected GrowableTile(Level level, Chunk chunk, int tx, int ty, TileType type, float min, float max) {
+    protected GrowableTile(Level level, Chunk chunk, int tx, int ty, TileType type, float minSec, float maxSec) {
         super(level, chunk, tx, ty, type);
 
         this.maxGrowState = (short) (type.getVariants() - 1);
 
-        this.minGrowTicks = (long) (min * CoreParameters.TICK_RATE);
-        this.maxGrowTicks = (long) (max * CoreParameters.TICK_RATE);
+        this.minGrowTicks = (long) (minSec * CoreParameters.TICK_RATE);
+        this.maxGrowTicks = (long) (maxSec * CoreParameters.TICK_RATE);
         if (maxGrowTicks <= minGrowTicks)
             throw new IllegalArgumentException("MinGrowTicks has to be less than MaxGrowTicks!");
 
