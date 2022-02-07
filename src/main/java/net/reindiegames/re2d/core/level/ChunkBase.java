@@ -11,6 +11,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,8 +28,10 @@ public class ChunkBase implements Tickable {
     private final Map<Integer, Map<Integer, Chunk>> chunkMap;
     private final Set<Chunk> loadedChunks;
     private final Set<Entity> entities;
+    private final Set<TileEntity> tileEntities;
 
     private int nextEntityId;
+    private int nextTileEntityId;
 
     protected ChunkBase(Level level) {
         this.level = level;
@@ -36,6 +39,8 @@ public class ChunkBase implements Tickable {
         this.chunkMap = new HashMap<>();
         this.loadedChunks = new HashSet<>();
         this.entities = new HashSet<>();
+        this.tileEntities = new HashSet<>();
+
         this.world = new World(new Vec2(0.0f, 0.0f));
 
         world.setContactListener(new ContactListener() {
@@ -71,6 +76,7 @@ public class ChunkBase implements Tickable {
         });
 
         this.nextEntityId = 0;
+        this.nextTileEntityId = 0;
     }
 
     public Chunk getChunk(int cx, int cy, boolean generate, boolean load) {
@@ -90,15 +96,17 @@ public class ChunkBase implements Tickable {
                 level.populate(chunk, tiles, variants);
 
                 Vector2f levelPos;
+                Vector2i tilePos;
                 TileType type;
                 Tile tile;
                 for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
                     for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                         levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
+                        tilePos = CoordinateSystems.levelToLevelTile(levelPos);
                         if (tiles[rx][ry] <= 0) continue;
 
                         type = TileType.getById(tiles[rx][ry]);
-                        tile = new Tile(chunk.level, (int) levelPos.x, (int) levelPos.y, type);
+                        tile = type.newInstance(level, chunk, tilePos.x, tilePos.y);
                         tile.variant = variants[rx][ry];
 
                         chunk.tiles[rx][ry] = tile;
@@ -177,21 +185,44 @@ public class ChunkBase implements Tickable {
         }
     }
 
-    protected void addEntity(Entity entity) {
+    public void addEntity(Entity entity) {
         synchronized (entities) {
             entities.add(entity);
         }
     }
 
-    private void removeEntity(Entity entity) {
+    public void removeEntity(Entity entity) {
         synchronized (entities) {
             entities.remove(entity);
+        }
+    }
+
+    public int nextTileEntityId() {
+        return nextTileEntityId++;
+    }
+
+    public void forEachTileEntity(Consumer<TileEntity> tileEntityConsumer) {
+        synchronized (tileEntities) {
+            tileEntities.forEach(tileEntityConsumer);
+        }
+    }
+
+    public void addTileEntity(TileEntity tileEntity) {
+        synchronized (tileEntities) {
+            tileEntities.add(tileEntity);
+        }
+    }
+
+    public void removeTileEntity(TileEntity tileEntity) {
+        synchronized (tileEntities) {
+            tileEntities.remove(tileEntity);
         }
     }
 
     @Override
     public void syncTick(long totalTicks, float delta) {
         this.forEachEntity(entity -> entity.syncTick(totalTicks, delta));
+        this.forEachTileEntity(tileEntity -> tileEntity.syncTick(totalTicks, delta));
     }
 
     @Override

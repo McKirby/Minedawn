@@ -127,6 +127,7 @@ class ClientCoreBridge {
     }
 
     protected synchronized static Mesh[] generateTerrainMesh(Chunk c) {
+        final long start = System.currentTimeMillis();
         int maxAnimationDuration = 1;
         int animationDuration;
 
@@ -147,6 +148,9 @@ class ClientCoreBridge {
         for (int i = 0; i < meshes.length; i++) {
             meshes[i] = ClientCoreBridge.generateTickTerrainMesh(i, c);
         }
+
+        long delta = System.currentTimeMillis() - start;
+        Log.debug("Generated ChunkMesh in " + delta + "ms!");
 
         return meshes;
     }

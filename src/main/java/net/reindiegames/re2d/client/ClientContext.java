@@ -92,17 +92,14 @@ public class ClientContext extends GameContext {
 
             switch (button) {
                 case GLFW.GLFW_MOUSE_BUTTON_1 -> {
-                    player.navigator.navigate(goal);
+                    player.level.setTileType(goal, TileType.MUSHROOM);
                 }
-
                 case GLFW.GLFW_MOUSE_BUTTON_2 -> {
-                    player.level.setTileType(goal, TileType.COBBLESTONE);
-                }
-
-                case GLFW.GLFW_MOUSE_BUTTON_3 -> {
                     player.level.setTileType(goal, TileType.STONE_WALL);
                 }
-
+                case GLFW.GLFW_MOUSE_BUTTON_3 -> {
+                    player.navigator.navigate(goal);
+                }
                 default -> {
                 }
             }

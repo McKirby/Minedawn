@@ -2,6 +2,7 @@ package net.reindiegames.re2d.core.level.entity;
 
 import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.Tile;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -13,6 +14,15 @@ public class EntitySentient extends Entity {
         this.navigator = new Navigator(this);
     }
 
+    public void standOn(Tile tile) {
+    }
+
+    @Override
+    public void halt() {
+        super.halt();
+        navigator.stopNavigation();
+    }
+
     @Override
     public void asyncTick(long totalTicks, float delta) {
         Vector2i nextWaypoint = navigator.nextWaypoint();
@@ -22,13 +32,12 @@ public class EntitySentient extends Entity {
             float dy = (nextWaypoint.y + 0.5f) - pos.y;
             this.move(dx, dy);
 
-            if (new Vector2f(dx, dy).length() <= ENTITY_PADDING) {
+            if (new Vector2f(dx, dy).length() <= 0.1f) {
                 if (navigator.progressIndex()) {
-                    navigator.stopNavigation();
+                    this.halt();
                 }
             }
         }
-
         super.asyncTick(totalTicks, delta);
     }
 

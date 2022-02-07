@@ -14,6 +14,8 @@ public interface ICollidable {
     public abstract boolean collidesWith(ICollidable object);
 
     public default void removePhysics() {
-        this.getLevel().getChunkBase().world.destroyBody(this.getBody());
+        final Body body = this.getBody();
+        if (body == null) return;
+        this.getLevel().getChunkBase().world.destroyBody(body);
     }
 }

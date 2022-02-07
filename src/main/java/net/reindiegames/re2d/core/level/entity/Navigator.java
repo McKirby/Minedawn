@@ -6,7 +6,6 @@ import net.reindiegames.re2d.core.level.Tile;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-import java.text.NumberFormat;
 import java.util.*;
 
 public class Navigator {
@@ -26,6 +25,11 @@ public class Navigator {
         return path.size() != 0 && pathIndex < path.size();
     }
 
+    protected float getProgress() {
+        if (!this.isNavigating()) return 1.0f;
+        return ((float) pathIndex) / ((float) path.size());
+    }
+
     protected Vector2i nextWaypoint() {
         if (pathIndex >= path.size()) return null;
         return path.get(pathIndex);
@@ -43,6 +47,7 @@ public class Navigator {
     }
 
     public boolean navigate(Vector2f goal) {
+        long startTime = System.currentTimeMillis();
         this.stopNavigation();
 
         final Level level = entity.level;
@@ -66,6 +71,9 @@ public class Navigator {
                     current = current.prev;
                 }
                 Collections.reverse(path);
+
+                long delta = System.currentTimeMillis() - startTime;
+                Log.debug("Finding a Path took " + delta + "ms.");
                 return true;
             } else {
                 for (int rx = -1; rx <= 1; rx++) {
@@ -89,7 +97,8 @@ public class Navigator {
             }
         }
 
-        Log.warn("Could not find Path to Goal!");
+        long delta = System.currentTimeMillis() - startTime;
+        Log.warn("Could not find Path to Goal (In " + delta + "ms)!");
         return false;
     }
 
@@ -120,11 +129,6 @@ public class Navigator {
         @Override
         public int compareTo(Node o) {
             return Float.compare(cost, o.cost);
-        }
-
-        @Override
-        public String toString() {
-            return "Node{x=" + x + ", y=" + y + ", cost=" + cost + '}';
         }
     }
 }

@@ -2,19 +2,23 @@ package net.reindiegames.re2d.core.level;
 
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.GameResource;
+import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TileType extends GameResource {
-    public static final String RESOURCE_PATH = "core/tiles/";
+    public static final String RESOURCE_PATH = "core/level/tiles/";
+    public static final String TILE_IMPL_PREFIX = "net.reindiegames.re2d.core.level.tiles.";
 
     public static TileType GRASS;
     public static TileType WATER;
     public static TileType STONE_WALL;
     public static TileType COBBLESTONE;
     public static TileType MARKER;
+    public static TileType MUSHROOM;
 
     public static final int NO_TILING = 0;
     public static final int COMPLETE_TILING = 1;
@@ -33,8 +37,10 @@ public class TileType extends GameResource {
     }
 
     protected int tiling;
+    protected short variants;
     protected short defaultVariant;
     protected boolean solid;
+    protected Constructor creator;
 
     private TileType(String resource) {
         super(resource);
@@ -48,6 +54,7 @@ public class TileType extends GameResource {
         ReflectionUtil.setStatic(TileType.class, "STONE_WALL", TileType.getByResource("stone_wall.json"));
         ReflectionUtil.setStatic(TileType.class, "COBBLESTONE", TileType.getByResource("cobblestone.json"));
         ReflectionUtil.setStatic(TileType.class, "MARKER", TileType.getByResource("marker.json"));
+        ReflectionUtil.setStatic(TileType.class, "MUSHROOM", TileType.getByResource("mushroom.json"));
     }
 
     public static TileType getById(int id) {
@@ -66,6 +73,10 @@ public class TileType extends GameResource {
         return tiling;
     }
 
+    public short getVariants() {
+        return variants;
+    }
+
     public short getDefaultVariant() {
         return defaultVariant;
     }
@@ -74,12 +85,42 @@ public class TileType extends GameResource {
         return solid;
     }
 
+    public Tile newInstance(Level level, Chunk chunk, int tx, int ty) {
+        if (creator == null) {
+            return new Tile(level, chunk, tx, ty, this);
+        } else {
+            try {
+                return (Tile) creator.newInstance(level, chunk, tx, ty);
+            } catch (ReflectiveOperationException e) {
+                Log.debug("Can not create Tile with Type '" + this.name + "'! Is the Implementation corrupt?!");
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
     @Override
     public void load(JsonObject source) {
         final JsonObject core = source.get("core").getAsJsonObject();
         this.tiling = core.get("tiling").getAsInt();
+
         this.defaultVariant = DEFAULT_VARIANT[tiling];
         this.solid = core.get("solid").getAsBoolean();
+
+        if (core.has("implementation")) {
+            try {
+                Class clazz = Class.forName(TILE_IMPL_PREFIX + core.get("implementation").getAsString());
+                this.creator = clazz.getDeclaredConstructor(Level.class, Chunk.class, Integer.class, Integer.class);
+                creator.setAccessible(true);
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        } else {
+            this.creator = null;
+        }
+
+        final JsonObject client = source.get("client").getAsJsonObject();
+        this.variants = (short) client.get("sprites").getAsJsonArray().size();
     }
 
     @Override

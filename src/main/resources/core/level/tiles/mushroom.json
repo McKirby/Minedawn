@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "id": 6,
+    "name": "Mushroom"
+  },
+  "core": {
+    "tiling": 0,
+    "solid": false,
+    "implementation": "MushroomTile"
+  },
+  "client": {
+    "atlas": "TERRAIN_01",
+    "sprites": [
+      160, 161, 162, 163
+    ]
+  },
+  "server": {
+  }
+}

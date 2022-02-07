@@ -6,7 +6,7 @@ import org.jbox2d.dynamics.BodyType;
 import org.joml.Vector2f;
 
 public abstract class Entity extends ACollidable {
-    public static final float ENTITY_PADDING = 0.1f;
+    public static final float ENTITY_PADDING = 0.0f;
 
     public final EntityType type;
     public final int entityId;

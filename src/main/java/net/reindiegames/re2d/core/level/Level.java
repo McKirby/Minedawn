@@ -4,6 +4,7 @@ import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.EntitySentient;
+import org.joml.Random;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -55,12 +56,12 @@ public interface Level extends ChunkPopulator, Tickable {
         if (chunk == null) return;
 
         final Vector2i relative = CoordinateSystems.levelToChunkRelative(tilePos);
-        final Tile newTile = new Tile(this, tilePos.x, tilePos.y, type);
+        final Tile newTile = type.newInstance(this, chunk, tilePos.x, tilePos.y);
         newTile.variant = variant;
 
         final Tile oldTile = chunk.tiles[relative.x][relative.y];
         if (oldTile != null) {
-            oldTile.removePhysics();
+            oldTile.destroy();
         }
 
         chunk.tiles[relative.x][relative.y] = newTile;

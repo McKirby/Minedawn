@@ -78,7 +78,7 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
         this.clampVelocity();
     }
 
-    public final void halt() {
+    public void halt() {
         this.throttleVelocity();
     }
 
