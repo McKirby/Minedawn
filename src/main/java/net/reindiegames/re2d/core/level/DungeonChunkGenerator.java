@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Log;
+import net.reindiegames.re2d.core.level.entity.EntityZombie;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -134,7 +135,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         this.characterizePaths();
 
         final List<DungeonTile> features = this.stream().filter(t -> t.type == ROOM).collect(Collectors.toList());
-        if(!features.isEmpty()) {
+        if (!features.isEmpty()) {
             final DungeonTile spawnTile = features.get(random.nextInt(features.size()));
             this.spawn = new Vector2i(spawnTile.x * scale, spawnTile.y * scale);
         } else {
@@ -359,6 +360,10 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                 generatedLevel.getChunkBase().getChunk(cx, cy, true, true);
             }
         }
+
+        this.stream().filter(t -> (t.type != WALL) && random.nextFloat() < 0.05f).forEach(t -> {
+            generatedLevel.spawn(EntityZombie.class, new Vector2f(t.x * scale, t.y * scale));
+        });
     }
 
     public class DungeonTile {

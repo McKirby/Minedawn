@@ -76,8 +76,8 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
 
             RenderCompound.AnimationParameters p = compound.animation[entity.action];
             int frame;
-            if (entity.state >= 0) {
-                frame = entity.state;
+            if (entity.actionState >= 0) {
+                frame = entity.actionState;
             } else {
                 frame = p.frames == 1 ? 0 : (int) ((totalTicks / p.ticks) % p.frames);
             }

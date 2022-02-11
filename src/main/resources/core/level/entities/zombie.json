@@ -1,12 +1,12 @@
 {
   "meta": {
-    "id": 1,
-    "name": "Player"
+    "id": 2,
+    "name": "Zombie"
   },
   "client": {
     "atlas": "TERRAIN_01",
     "sprites": [
-      160
+      162
     ]
   }
 }

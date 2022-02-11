@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TileType extends GameResource {
-    public static final String RESOURCE_PATH = "core/level/tiles/";
-    public static final String TILE_IMPL_PREFIX = "net.reindiegames.re2d.core.level.tiles.";
+    private static final String RESOURCE_PATH = "core/level/tiles/";
+    private static final String TILE_IMPL_PREFIX = "net.reindiegames.re2d.core.level.tiles.";
 
     public static TileType GRASS;
     public static TileType WATER;
@@ -40,7 +40,7 @@ public class TileType extends GameResource {
     protected short variants;
     protected short defaultVariant;
     protected boolean solid;
-    protected Constructor creator;
+    protected Constructor constructor;
 
     private TileType(String resource) {
         super(resource);
@@ -86,11 +86,11 @@ public class TileType extends GameResource {
     }
 
     public Tile newInstance(Level level, Chunk chunk, int tx, int ty) {
-        if (creator == null) {
+        if (constructor == null) {
             return new Tile(level, chunk, tx, ty, this);
         } else {
             try {
-                return (Tile) creator.newInstance(level, chunk, tx, ty);
+                return (Tile) constructor.newInstance(level, chunk, tx, ty);
             } catch (ReflectiveOperationException e) {
                 Log.debug("Can not create Tile with Type '" + this.name + "'! Is the Implementation corrupt?!");
                 e.printStackTrace();
@@ -110,13 +110,13 @@ public class TileType extends GameResource {
         if (core.has("implementation")) {
             try {
                 Class clazz = Class.forName(TILE_IMPL_PREFIX + core.get("implementation").getAsString());
-                this.creator = clazz.getDeclaredConstructor(Level.class, Chunk.class, Integer.class, Integer.class);
-                creator.setAccessible(true);
+                this.constructor = clazz.getDeclaredConstructor(Level.class, Chunk.class, Integer.class, Integer.class);
+                constructor.setAccessible(true);
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
             }
         } else {
-            this.creator = null;
+            this.constructor = null;
         }
 
         final JsonObject client = source.get("client").getAsJsonObject();

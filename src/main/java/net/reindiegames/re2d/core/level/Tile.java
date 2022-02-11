@@ -45,16 +45,20 @@ public class Tile implements ICollidable {
     }
 
     @Override
-    public void touch(ICollidable object) {
+    public void touch(ICollidable object, boolean collision) {
     }
 
     @Override
-    public void release(ICollidable object) {
+    public void release(ICollidable object, boolean collision) {
     }
 
     @Override
     public boolean collidesWith(ICollidable object) {
         return object instanceof EntitySentient && type.solid;
+    }
+
+    @Override
+    public void collision(ICollidable object) {
     }
 
     public Vector2i getTilePosition() {

@@ -1,5 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.reindiegames.re2d.core.GameResource;
 import net.reindiegames.re2d.core.util.ReflectionUtil;
@@ -11,9 +13,12 @@ public class EntityType extends GameResource {
     public static final String RESOURCE_PATH = "core/level/entities/";
 
     public static EntityType PLAYER;
+    public static EntityType ZOMBIE;
 
     private static final Map<Integer, EntityType> ID_ENTITY_MAP = new HashMap<>();
     private static final Map<String, EntityType> RESOURCE_ENTITY_MAP = new HashMap<>();
+
+    protected short[] states;
 
     private EntityType(String resource) {
         super(resource);
@@ -23,6 +28,7 @@ public class EntityType extends GameResource {
 
     private static void link() throws Exception {
         ReflectionUtil.setStatic(EntityType.class, "PLAYER", EntityType.getByResource("player.json"));
+        ReflectionUtil.setStatic(EntityType.class, "ZOMBIE", EntityType.getByResource("zombie.json"));
     }
 
     public static EntityType getById(int id) {
@@ -37,8 +43,27 @@ public class EntityType extends GameResource {
         return ID_ENTITY_MAP.values().toArray(new EntityType[ID_ENTITY_MAP.size()]);
     }
 
+    public short getActions() {
+        return (short) states.length;
+    }
+
+    public short getActionStates(short action) {
+        return states[action];
+    }
+
     @Override
     public void load(JsonObject source) {
+        final JsonArray actionArray = source.get("client").getAsJsonObject().get("sprites").getAsJsonArray();
+
+        this.states = new short[actionArray.size()];
+        for (int action = 0; action < states.length; action++) {
+            JsonElement element = actionArray.get(action);
+            if (element.isJsonArray()) {
+                states[action] = (short) (element.getAsJsonArray().size() - 1);
+            } else {
+                states[action] = 1;
+            }
+        }
     }
 
     @Override

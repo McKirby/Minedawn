@@ -6,6 +6,7 @@ import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.entity.EntityZombie;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -31,7 +32,7 @@ public class ClientContext extends GameContext {
     protected static float speed = 1.0f;
 
     protected static Level currentLevel;
-    protected static EntityClientPlayer player;
+    public static EntityClientPlayer player;
 
     private ClientContext() {
     }

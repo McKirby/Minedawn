@@ -53,6 +53,10 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
         return this.getVelocity().length() * SPEED_FACTOR;
     }
 
+    public void setMaxSpeed(float speed) {
+        this.maxSpeed = Math.max(0.0f, speed);
+    }
+
     protected final void clampVelocity() {
         if (this.getSpeed() > maxSpeed) {
             final Vec2 velocity = body.getLinearVelocity();

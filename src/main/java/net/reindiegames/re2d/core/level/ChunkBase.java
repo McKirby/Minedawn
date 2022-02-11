@@ -49,8 +49,8 @@ public class ChunkBase implements Tickable {
                 ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
                 ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
 
-                a.touch(b);
-                b.touch(a);
+                a.touch(b, a.collidesWith(b) && b.collidesWith(a));
+                b.touch(a, a.collidesWith(b) && b.collidesWith(a));
             }
 
             @Override
@@ -58,8 +58,8 @@ public class ChunkBase implements Tickable {
                 ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
                 ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
 
-                a.release(b);
-                b.release(a);
+                a.release(b, a.collidesWith(b) && b.collidesWith(a));
+                b.release(a, a.collidesWith(b) && b.collidesWith(a));
             }
 
             @Override
@@ -67,7 +67,13 @@ public class ChunkBase implements Tickable {
                 ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
                 ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
 
-                contact.setEnabled(a.collidesWith(b) && b.collidesWith(a));
+                boolean enabled = a.collidesWith(b) && b.collidesWith(a);
+                contact.setEnabled(enabled);
+
+                if (enabled) {
+                    a.collision(b);
+                    b.collision(a);
+                }
             }
 
             @Override

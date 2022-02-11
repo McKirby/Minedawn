@@ -7,11 +7,13 @@ public interface ICollidable {
 
     public abstract Body getBody();
 
-    public abstract void touch(ICollidable object);
+    public abstract void touch(ICollidable object, boolean collision);
 
-    public abstract void release(ICollidable object);
+    public abstract void release(ICollidable object, boolean collision);
 
     public abstract boolean collidesWith(ICollidable object);
+
+    public abstract void collision(ICollidable object);
 
     public default void removePhysics() {
         final Body body = this.getBody();

@@ -1,6 +1,5 @@
 package net.reindiegames.re2d.core.level.entity;
 
-import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.Tile;
 import org.joml.Vector2f;
@@ -47,7 +46,10 @@ public class Navigator {
     }
 
     public boolean navigate(Vector2f goal) {
-        long startTime = System.currentTimeMillis();
+        return this.navigate(goal, -1);
+    }
+
+    public boolean navigate(Vector2f goal, int maxLength) {
         this.stopNavigation();
 
         final Level level = entity.level;
@@ -70,11 +72,14 @@ public class Navigator {
                     path.add(new Vector2i(current.x, current.y));
                     current = current.prev;
                 }
-                Collections.reverse(path);
 
-                long delta = System.currentTimeMillis() - startTime;
-                Log.debug("Finding a Path took " + delta + "ms.");
-                return true;
+                if (maxLength == -1 || path.size() <= maxLength) {
+                    Collections.reverse(path);
+                    return true;
+                } else {
+                    path.clear();
+                    continue;
+                }
             } else {
                 for (int rx = -1; rx <= 1; rx++) {
                     for (int ry = -1; ry <= 1; ry++) {
@@ -96,9 +101,6 @@ public class Navigator {
                 }
             }
         }
-
-        long delta = System.currentTimeMillis() - startTime;
-        Log.warn("Could not find Path to Goal (In " + delta + "ms)!");
         return false;
     }
 

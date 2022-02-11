@@ -12,10 +12,7 @@ public abstract class Entity extends ACollidable {
     public final int entityId;
 
     public short action;
-
-    //TODO: This should not be in the Core Part. It is Client Code. Can this be fixed?
-    @Deprecated
-    public short state;
+    public short actionState;
 
     protected Entity(EntityType type, Level level, Vector2f pos, float size) {
         super(level, pos, new Vector2f(size, size), BodyType.DYNAMIC, 10.0f);
@@ -25,7 +22,7 @@ public abstract class Entity extends ACollidable {
         level.getChunkBase().createBoundingSphere(this, body, size, ENTITY_PADDING);
 
         this.action = 0;
-        this.state = 1;
+        this.actionState = 0;
     }
 
     @Override

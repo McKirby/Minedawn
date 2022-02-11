@@ -2,25 +2,32 @@ package net.reindiegames.re2d.core.level.entity;
 
 import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
-import net.reindiegames.re2d.core.level.Tile;
+import org.joml.Random;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
 public class EntitySentient extends Entity {
+    public final Random random;
     public final Navigator navigator;
+    public final GoalSelector goalSelector;
 
     protected EntitySentient(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
+        this.random = new Random();
         this.navigator = new Navigator(this);
-    }
-
-    public void standOn(Tile tile) {
+        this.goalSelector = new GoalSelector(this);
     }
 
     @Override
     public void halt() {
         super.halt();
         navigator.stopNavigation();
+    }
+
+    @Override
+    public void syncTick(long totalTicks, float delta) {
+        super.syncTick(totalTicks, delta);
+        goalSelector.select(totalTicks);
     }
 
     @Override
@@ -42,15 +49,21 @@ public class EntitySentient extends Entity {
     }
 
     @Override
-    public void touch(ICollidable object) {
+    public void touch(ICollidable object, boolean collision) {
     }
 
     @Override
-    public void release(ICollidable object) {
+    public void release(ICollidable object, boolean collision) {
     }
 
     @Override
     public boolean collidesWith(ICollidable object) {
         return true;
+    }
+
+    @Override
+    public void collision(ICollidable object) {
+        goalSelector.cancel();
+        this.halt();
     }
 }
