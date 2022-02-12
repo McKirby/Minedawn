@@ -6,7 +6,6 @@ import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.TileType;
-import net.reindiegames.re2d.core.level.entity.EntityZombie;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -89,7 +88,7 @@ public class ClientContext extends GameContext {
         }));
         Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
-            final Vector2f goal = Input.getLevelPosition(x, y);
+            final Vector2f goal = Input.getCursorLevelPosition();
 
             switch (button) {
                 case GLFW.GLFW_MOUSE_BUTTON_1 -> {
@@ -138,17 +137,17 @@ public class ClientContext extends GameContext {
     }
 
     @Override
-    protected void syncTick(long totalTicks, float delta) {
-        super.syncTick(totalTicks, delta);
-        currentLevel.syncTick(totalTicks, delta);
+    protected void syncTick(float delta) {
+        super.syncTick(delta);
+        currentLevel.syncTick(delta);
     }
 
     @Override
-    protected void asyncTick(long totalTicks, float delta) {
+    protected void asyncTick(float delta) {
         GLFW.glfwPollEvents();
 
-        currentLevel.asyncTick(totalTicks, delta);
-        levelRenderPipeline.render(currentLevel, window, player.getCenter(), totalTicks);
+        currentLevel.asyncTick(delta);
+        levelRenderPipeline.render(currentLevel, window, player.getCenter());
         GLFW.glfwSwapBuffers(window);
         tileScaleChanged = false;
     }

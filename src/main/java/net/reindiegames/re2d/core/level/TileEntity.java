@@ -12,11 +12,11 @@ public class TileEntity extends Tile implements Tickable {
     }
 
     @Override
-    public void syncTick(long totalTicks, float delta) {
+    public void syncTick(float delta) {
     }
 
     @Override
-    public final void asyncTick(long totalTicks, float delta) {
+    public final void asyncTick(float delta) {
     }
 
     @Override

@@ -62,11 +62,11 @@ public abstract class GameContext {
         Log.info("Bye!");
     }
 
-    protected void syncTick(long totalTicks, float delta) {
+    protected void syncTick(float delta) {
         DAY_NIGHT_CIRCLE.tick();
     }
 
-    protected abstract void asyncTick(long totalTicks, float delta);
+    protected abstract void asyncTick(float delta);
 
     protected abstract boolean shouldClose();
 
@@ -83,7 +83,6 @@ public abstract class GameContext {
         float asyncDelta = 0.0f;
 
         long lastDebug = System.currentTimeMillis();
-        long totalTicks = 0L;
         int syncTicks = 0;
         int asyncTicks = 0;
 
@@ -95,12 +94,12 @@ public abstract class GameContext {
             syncDelta += asyncDelta;
 
             while (syncDelta >= 1.0f) {
-                this.syncTick(totalTicks, Math.min(syncDelta, 1.0f));
+                this.syncTick(Math.min(syncDelta, 1.0f));
                 syncDelta--;
                 syncTicks++;
-                totalTicks++;
+                CoreParameters.totalTicks++;
             }
-            this.asyncTick(totalTicks, asyncDelta);
+            this.asyncTick(asyncDelta);
             asyncTicks++;
 
             if (System.currentTimeMillis() - lastDebug >= 1000) {

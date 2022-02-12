@@ -1,21 +1,35 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.joml.Random;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-public class EntitySentient extends Entity {
+public class EntitySentient extends Entity implements ProjectileSource {
     public final Random random;
     public final Navigator navigator;
     public final GoalSelector goalSelector;
+
+    protected long shootDelay;
+    protected long lastShoot;
 
     protected EntitySentient(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
         this.random = new Random();
         this.navigator = new Navigator(this);
         this.goalSelector = new GoalSelector(this);
+
+        this.shootDelay = CoreParameters.TICK_RATE >> 2;
+        this.lastShoot = 0L;
+    }
+
+    @Override
+    public void shoot(Class<? extends EntityProjectile> clazz, Vector2f direction, float speed) {
+        if (CoreParameters.totalTicks - lastShoot < shootDelay) return;
+        ProjectileSource.super.shoot(clazz, direction, speed);
+        this.lastShoot = CoreParameters.totalTicks;
     }
 
     @Override
@@ -25,13 +39,13 @@ public class EntitySentient extends Entity {
     }
 
     @Override
-    public void syncTick(long totalTicks, float delta) {
-        super.syncTick(totalTicks, delta);
-        goalSelector.select(totalTicks);
+    public void syncTick(float delta) {
+        super.syncTick(delta);
+        goalSelector.select();
     }
 
     @Override
-    public void asyncTick(long totalTicks, float delta) {
+    public void asyncTick(float delta) {
         Vector2i nextWaypoint = navigator.nextWaypoint();
         if (nextWaypoint != null) {
             Vector2f pos = this.getCenter();
@@ -45,7 +59,7 @@ public class EntitySentient extends Entity {
                 }
             }
         }
-        super.asyncTick(totalTicks, delta);
+        super.asyncTick(delta);
     }
 
     @Override

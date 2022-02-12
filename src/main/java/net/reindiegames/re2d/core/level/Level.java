@@ -3,6 +3,7 @@ package net.reindiegames.re2d.core.level;
 import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.Tickable;
+import net.reindiegames.re2d.core.level.entity.Entity;
 import net.reindiegames.re2d.core.level.entity.EntitySentient;
 import org.joml.Random;
 import org.joml.Vector2f;
@@ -68,11 +69,11 @@ public interface Level extends ChunkPopulator, Tickable {
         chunk.changed = true;
     }
 
-    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2i tilePos) {
+    public default <E extends Entity> E spawn(Class<E> implClazz, Vector2i tilePos) {
         return this.spawn(implClazz, CoordinateSystems.levelTileToLevel(tilePos));
     }
 
-    public default <E extends EntitySentient> E spawn(Class<E> implClazz, Vector2f levelPos) {
+    public default <E extends Entity> E spawn(Class<E> implClazz, Vector2f levelPos) {
         Constructor<E> constructor;
         try {
             constructor = implClazz.getDeclaredConstructor(Level.class, Vector2f.class);
@@ -90,12 +91,12 @@ public interface Level extends ChunkPopulator, Tickable {
     }
 
     @Override
-    public default void syncTick(long totalTicks, float delta) {
-        this.getChunkBase().syncTick(totalTicks, delta);
+    public default void syncTick(float delta) {
+        this.getChunkBase().syncTick(delta);
     }
 
     @Override
-    public default void asyncTick(long totalTicks, float delta) {
-        this.getChunkBase().asyncTick(totalTicks, delta);
+    public default void asyncTick(float delta) {
+        this.getChunkBase().asyncTick(delta);
     }
 }

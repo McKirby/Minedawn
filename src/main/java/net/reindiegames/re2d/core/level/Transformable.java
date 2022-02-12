@@ -1,9 +1,8 @@
 package net.reindiegames.re2d.core.level;
 
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 
-public abstract class Transformable implements Positionable, Scaleable, Rotateable {
+public abstract class Transformable implements Pinpointable {
     public final Vector2f size;
 
     public final float[] transformation;
@@ -18,15 +17,6 @@ public abstract class Transformable implements Positionable, Scaleable, Rotateab
     @Override
     public Vector2f getSize() {
         return new Vector2f(size.x, size.y);
-    }
-
-    public Vector2f getCenter() {
-        return this.getPosition().add(size.x / 2.0f, size.y / 2.0f);
-    }
-
-    public Vector2i getCenterTilePosition() {
-        final Vector2f center = this.getCenter();
-        return new Vector2i((int) center.x, (int) center.y);
     }
 
     @Override

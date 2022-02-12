@@ -16,6 +16,7 @@ import java.util.Map;
 import static net.reindiegames.re2d.client.ClientCoreBridge.CHUNK_MESH_MAP;
 import static net.reindiegames.re2d.client.ClientParameters.*;
 import static net.reindiegames.re2d.core.CoreParameters.debug;
+import static net.reindiegames.re2d.core.CoreParameters.totalTicks;
 
 class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     private final IntBuffer heightBuffer;
@@ -53,7 +54,7 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
     }
 
     @Override
-    protected void process(long totalTicks, Level level) {
+    protected void process(Level level) {
         shader.loadDepth(0.0f);
         level.getChunkBase().forEachLoadedChunk((chunk -> {
             Map<Integer, Mesh[]> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
@@ -99,7 +100,6 @@ class TerrainRenderStage extends RenderStage<TerrainShader, Level> {
 
     private final void renderMesh(Transformable t, Mesh mesh) {
         GL30.glBindVertexArray(mesh.vao);
-
 
         if (t.changed || tileScaleChanged) {
             Shader.generateTransformation(t.transformation, t.getPosition(), t.size, t.getRotation());

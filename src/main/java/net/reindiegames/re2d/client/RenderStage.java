@@ -10,10 +10,10 @@ abstract class RenderStage<S extends Shader, O> {
         this.shader = shader;
     }
 
-    protected final void render(O renderSource, long window, Vector2f c, long totalTicks) {
+    protected final void render(O renderSource, long window, Vector2f c) {
         this.load();
         this.prepare(window, c);
-        this.process(totalTicks, renderSource);
+        this.process(renderSource);
         this.finish();
         this.yield();
     }
@@ -22,7 +22,7 @@ abstract class RenderStage<S extends Shader, O> {
 
     protected abstract void prepare(long window, Vector2f c);
 
-    protected abstract void process(long totalTicks, O renderSource);
+    protected abstract void process(O renderSource);
 
     protected abstract void finish();
 

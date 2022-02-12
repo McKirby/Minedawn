@@ -10,7 +10,7 @@ class LevelRenderPipeline {
         this.terrainRenderStage = new TerrainRenderStage();
     }
 
-    protected void render(Level level, long window, Vector2f c, long totalTicks) {
-        terrainRenderStage.render(level, window, c, totalTicks);
+    protected void render(Level level, long window, Vector2f c) {
+        terrainRenderStage.render(level, window, c);
     }
 }

@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.core.level;
 
+import net.reindiegames.re2d.core.level.entity.Entity;
 import net.reindiegames.re2d.core.level.entity.EntitySentient;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;
@@ -54,7 +55,7 @@ public class Tile implements ICollidable {
 
     @Override
     public boolean collidesWith(ICollidable object) {
-        return object instanceof EntitySentient && type.solid;
+        return object instanceof Entity && type.solid;
     }
 
     @Override

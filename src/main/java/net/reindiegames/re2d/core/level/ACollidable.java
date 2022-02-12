@@ -4,7 +4,11 @@ import net.reindiegames.re2d.core.Tickable;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.joints.Joint;
 import org.joml.Vector2f;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 import static net.reindiegames.re2d.core.level.Level.VELOCITY_PRECISION;
@@ -15,6 +19,7 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
     public final Level level;
     public final Body body;
 
+    private final List<Joint> joints;
     private float defaultSpeedThrottle;
     private float maxSpeed;
 
@@ -26,16 +31,18 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
         super(s);
         this.level = l;
 
+        this.joints = new ArrayList<>();
         this.defaultSpeedThrottle = speedThrottle;
         this.maxSpeed = maxSpeed;
 
-        if (t == null) {
-            this.body = null;
-        } else {
-            this.body = l.getChunkBase().createBody(this, t, p.x, p.y);
-            body.m_userData = this;
-            body.m_linearDamping = speedThrottle;
-        }
+        this.body = l.getChunkBase().createBody(this, t, p.x, p.y);
+        body.m_userData = this;
+        body.m_linearDamping = speedThrottle;
+        body.m_mass = s.x * s.y;
+    }
+
+    public void setSpeedThrottle(float throttle) {
+        body.m_linearDamping = throttle;
     }
 
     @Override
@@ -101,11 +108,11 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
     }
 
     @Override
-    public void syncTick(long totalTicks, float delta) {
+    public void syncTick(float delta) {
     }
 
     @Override
-    public void asyncTick(long totalTicks, float delta) {
+    public void asyncTick(float delta) {
         if (this.isMoving()) super.changed = true;
     }
 }

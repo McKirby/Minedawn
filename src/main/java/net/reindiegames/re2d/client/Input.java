@@ -1,10 +1,9 @@
 package net.reindiegames.re2d.client;
 
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryUtil;
 
-import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,16 +18,16 @@ enum Input {
     MOVE_SOUTH(GLFW.GLFW_KEY_S),
     ZOOM_OUT(GLFW.GLFW_KEY_Q),
     ZOOM_IN(GLFW.GLFW_KEY_E),
+    SHOOT(GLFW.GLFW_KEY_SPACE),
     EXIT_GAME(GLFW.GLFW_KEY_ESCAPE),
     DEBUG(GLFW.GLFW_KEY_TAB);
 
     private static final Map<Integer, Input> keyInputMap = new HashMap<>();
 
     private static final List<MouseAction> mouseActions = new ArrayList<>();
-    private static final DoubleBuffer xBuffer = MemoryUtil.memAllocDouble(1);
-    private static final DoubleBuffer yBuffer = MemoryUtil.memAllocDouble(1);
 
     private static long window;
+    private static Vector2d cursorPos;
 
     private final int keyCode;
     private boolean pressed;
@@ -44,6 +43,8 @@ enum Input {
         }
 
         window = w;
+        cursorPos = new Vector2d();
+
         GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
             if (action == GLFW.GLFW_REPEAT) return;
 
@@ -58,19 +59,24 @@ enum Input {
 
         GLFW.glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
             synchronized (mouseActions) {
-                xBuffer.clear();
-                yBuffer.clear();
-                GLFW.glfwGetCursorPos(window, xBuffer, yBuffer);
-
-                float x = (float) xBuffer.get();
-                float y = (float) yBuffer.get();
+                float x = (float) cursorPos.x;
+                float y = (float) cursorPos.y;
 
                 for (MouseAction mouseAction : mouseActions) {
                     mouseAction.onMouseAction(button, action == GLFW.GLFW_PRESS, x, y);
                 }
             }
         });
+
+        GLFW.glfwSetCursorPosCallback(window, (window, x, y) -> {
+            cursorPos.x = x;
+            cursorPos.y = y;
+        });
         return true;
+    }
+
+    protected static Vector2f getCursor() {
+        return new Vector2f((float) cursorPos.x, (float) cursorPos.y);
     }
 
     protected static void addMouseAction(MouseAction action) {
@@ -79,9 +85,9 @@ enum Input {
         }
     }
 
-    protected static Vector2f getLevelPosition(float mouseX, float mouseY) {
-        float xDiff = mouseX - (windowWidth / 2.0f);
-        float yDiff = -(mouseY - (windowHeight / 2.0f));
+    protected static Vector2f getCursorLevelPosition() {
+        float xDiff = (float) (cursorPos.x - (windowWidth / 2.0f));
+        float yDiff = (float) -(cursorPos.y - (windowHeight / 2.0f));
 
         final Vector2f playerCenter = ClientContext.player.getCenter();
         final Vector2f pos = new Vector2f(0.0f, 0.0f);

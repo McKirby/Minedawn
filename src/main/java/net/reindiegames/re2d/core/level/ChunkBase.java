@@ -10,13 +10,11 @@ import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
+import org.jbox2d.dynamics.joints.JointDef;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
@@ -27,8 +25,12 @@ public class ChunkBase implements Tickable {
 
     private final Map<Integer, Map<Integer, Chunk>> chunkMap;
     private final Set<Chunk> loadedChunks;
+
+    private final Set<Entity> createdEntities;
     private final Set<Entity> entities;
+    private final Set<Entity> deadEntities;
     private final Set<TileEntity> tileEntities;
+    private final List<JointDef> createdJoints;
 
     private int nextEntityId;
     private int nextTileEntityId;
@@ -38,8 +40,12 @@ public class ChunkBase implements Tickable {
 
         this.chunkMap = new HashMap<>();
         this.loadedChunks = new HashSet<>();
+
+        this.createdEntities = new HashSet<>();
         this.entities = new HashSet<>();
+        this.deadEntities = new HashSet<>();
         this.tileEntities = new HashSet<>();
+        this.createdJoints = new ArrayList<>();
 
         this.world = new World(new Vec2(0.0f, 0.0f));
 
@@ -192,15 +198,11 @@ public class ChunkBase implements Tickable {
     }
 
     public void addEntity(Entity entity) {
-        synchronized (entities) {
-            entities.add(entity);
-        }
+        createdEntities.add(entity);
     }
 
     public void removeEntity(Entity entity) {
-        synchronized (entities) {
-            entities.remove(entity);
-        }
+        deadEntities.add(entity);
     }
 
     public int nextTileEntityId() {
@@ -225,15 +227,39 @@ public class ChunkBase implements Tickable {
         }
     }
 
-    @Override
-    public void syncTick(long totalTicks, float delta) {
-        this.forEachEntity(entity -> entity.syncTick(totalTicks, delta));
-        this.forEachTileEntity(tileEntity -> tileEntity.syncTick(totalTicks, delta));
+    public void createJoint(JointDef def) {
+        synchronized (createdJoints) {
+            createdJoints.add(def);
+        }
     }
 
     @Override
-    public void asyncTick(long totalTicks, float delta) {
+    public void syncTick(float delta) {
+        this.forEachEntity(entity -> {
+            entity.syncTick(delta);
+
+            if (entity.dead) {
+                this.removeEntity(entity);
+            }
+        });
+
+        entities.addAll(createdEntities);
+        createdEntities.clear();
+
+        entities.removeAll(deadEntities);
+        deadEntities.clear();
+
+        this.forEachTileEntity(tileEntity -> tileEntity.syncTick(delta));
+
+        for (JointDef def : createdJoints) {
+            world.createJoint(def);
+        }
+        createdJoints.clear();
+    }
+
+    @Override
+    public void asyncTick(float delta) {
         world.step(delta, Level.VELOCITY_PRECISION, Level.MOVEMENT_PRECISION);
-        this.forEachEntity(entity -> entity.asyncTick(totalTicks, delta));
+        this.forEachEntity(entity -> entity.asyncTick(delta));
     }
 }

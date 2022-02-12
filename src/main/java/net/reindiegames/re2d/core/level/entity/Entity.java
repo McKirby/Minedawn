@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.level.ACollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.jbox2d.dynamics.BodyType;
@@ -11,6 +12,8 @@ public abstract class Entity extends ACollidable {
     public final EntityType type;
     public final int entityId;
 
+    public long timeCreated;
+    public boolean dead;
     public short action;
     public short actionState;
 
@@ -21,8 +24,14 @@ public abstract class Entity extends ACollidable {
 
         level.getChunkBase().createBoundingSphere(this, body, size, ENTITY_PADDING);
 
+        this.timeCreated = CoreParameters.totalTicks;
+        this.dead = false;
         this.action = 0;
         this.actionState = 0;
+    }
+
+    public long getTimeExisted() {
+        return CoreParameters.totalTicks - timeCreated;
     }
 
     @Override

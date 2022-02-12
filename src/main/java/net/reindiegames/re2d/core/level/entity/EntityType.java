@@ -14,6 +14,7 @@ public class EntityType extends GameResource {
 
     public static EntityType PLAYER;
     public static EntityType ZOMBIE;
+    public static EntityType ARROW;
 
     private static final Map<Integer, EntityType> ID_ENTITY_MAP = new HashMap<>();
     private static final Map<String, EntityType> RESOURCE_ENTITY_MAP = new HashMap<>();
@@ -29,6 +30,7 @@ public class EntityType extends GameResource {
     private static void link() throws Exception {
         ReflectionUtil.setStatic(EntityType.class, "PLAYER", EntityType.getByResource("player.json"));
         ReflectionUtil.setStatic(EntityType.class, "ZOMBIE", EntityType.getByResource("zombie.json"));
+        ReflectionUtil.setStatic(EntityType.class, "ARROW", EntityType.getByResource("arrow.json"));
     }
 
     public static EntityType getById(int id) {

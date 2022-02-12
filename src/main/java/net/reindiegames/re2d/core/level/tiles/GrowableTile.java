@@ -53,8 +53,8 @@ public class GrowableTile extends TileEntity {
     }
 
     @Override
-    public void syncTick(long totalTicks, float delta) {
-        super.syncTick(totalTicks, delta);
+    public void syncTick(float delta) {
+        super.syncTick(delta);
 
         ticksExisted++;
         if (ticksExisted % CoreParameters.TICK_RATE != 0) return;

@@ -1,7 +1,7 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.entity.EntityArrow;
 import net.reindiegames.re2d.core.level.entity.EntityPlayer;
 import org.joml.Vector2f;
 
@@ -13,7 +13,7 @@ public class EntityClientPlayer extends EntityPlayer {
     }
 
     @Override
-    public void asyncTick(long totalTicks, float delta) {
+    public void asyncTick(float delta) {
         float dx = 0.0f;
         float dy = 0.0f;
 
@@ -40,6 +40,11 @@ public class EntityClientPlayer extends EntityPlayer {
             tileScaleChanged = true;
         }
 
-        super.asyncTick(totalTicks, delta);
+        if (Input.SHOOT.isPressed()) {
+            final Vector2f dir = Input.getCursorLevelPosition().sub(this.getCenter());
+            dir.normalize();
+            this.shoot(EntityArrow.class, dir, 20.0f);
+        }
+        super.asyncTick(delta);
     }
 }
