@@ -24,14 +24,12 @@ import static net.reindiegames.re2d.core.CoreParameters.debug;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class ClientContext extends GameContext {
+    public static EntityClientPlayer player;
     protected static ClientContext runningContext = null;
-
     protected static LevelRenderPipeline levelRenderPipeline;
     protected static long window = -1;
     protected static float speed = 1.0f;
-
     protected static Level currentLevel;
-    public static EntityClientPlayer player;
 
     private ClientContext() {
     }
@@ -159,6 +157,6 @@ public class ClientContext extends GameContext {
 
     @Override
     protected String debugInfo(int syncTicks, int asyncTicks) {
-        return GameContext.DAY_NIGHT_CIRCLE.getTimeString() + ", FPS: " + asyncTicks + ", TPS: " + syncTicks;
+        return "FPS: " + asyncTicks + ", TPS: " + syncTicks + ", E: " + currentLevel.getLoadedEntities();
     }
 }

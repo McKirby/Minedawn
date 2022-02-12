@@ -34,6 +34,10 @@ public abstract class Entity extends ACollidable {
         return CoreParameters.totalTicks - timeCreated;
     }
 
+    public void die() {
+        this.removePhysics();
+    }
+
     @Override
     public int hashCode() {
         return entityId;

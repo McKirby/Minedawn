@@ -21,7 +21,7 @@ public class EntitySentient extends Entity implements ProjectileSource {
         this.navigator = new Navigator(this);
         this.goalSelector = new GoalSelector(this);
 
-        this.shootDelay = CoreParameters.TICK_RATE >> 2;
+        this.shootDelay = CoreParameters.TICK_RATE >> 4;
         this.lastShoot = 0L;
     }
 

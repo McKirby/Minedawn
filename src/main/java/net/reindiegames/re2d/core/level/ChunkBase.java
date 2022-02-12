@@ -239,6 +239,7 @@ public class ChunkBase implements Tickable {
             entity.syncTick(delta);
 
             if (entity.dead) {
+                entity.die();
                 this.removeEntity(entity);
             }
         });
@@ -261,5 +262,9 @@ public class ChunkBase implements Tickable {
     public void asyncTick(float delta) {
         world.step(delta, Level.VELOCITY_PRECISION, Level.MOVEMENT_PRECISION);
         this.forEachEntity(entity -> entity.asyncTick(delta));
+    }
+
+    public int getLoadedEntities() {
+        return entities.size();
     }
 }

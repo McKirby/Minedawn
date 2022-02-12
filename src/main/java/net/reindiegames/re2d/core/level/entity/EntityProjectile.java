@@ -1,10 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
 import net.reindiegames.re2d.core.CoreParameters;
-import net.reindiegames.re2d.core.level.DamageSource;
-import net.reindiegames.re2d.core.level.Damageable;
-import net.reindiegames.re2d.core.level.ICollidable;
-import net.reindiegames.re2d.core.level.Level;
+import net.reindiegames.re2d.core.level.*;
 import org.joml.Vector2f;
 
 public class EntityProjectile extends EntityInsentient implements DamageSource {
@@ -34,7 +31,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
 
     @Override
     public boolean collidesWith(ICollidable object) {
-        return !(object instanceof EntityInsentient || object.equals(source));
+        return object instanceof EntitySentient && !object.equals(source);
     }
 
     @Override

@@ -90,6 +90,10 @@ public interface Level extends ChunkPopulator, Tickable {
         }
     }
 
+    public default int getLoadedEntities() {
+        return this.getChunkBase().getLoadedEntities();
+    }
+
     @Override
     public default void syncTick(float delta) {
         this.getChunkBase().syncTick(delta);
