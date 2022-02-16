@@ -90,6 +90,7 @@ public class ClientContext extends GameContext {
 
             switch (button) {
                 case GLFW.GLFW_MOUSE_BUTTON_1 -> {
+                    player.hasLineOfSight(goal);
                     player.level.setTileType(goal, TileType.MUSHROOM);
                 }
                 case GLFW.GLFW_MOUSE_BUTTON_2 -> {

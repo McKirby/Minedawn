@@ -1,10 +1,12 @@
 package net.reindiegames.re2d.core.level;
 
-import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.joints.WeldJointDef;
 
 public interface ICollidable extends LevelObject {
+    public static boolean isCollision(ICollidable a, ICollidable b) {
+        return a.collidesWith(b) && b.collidesWith(a);
+    }
+
     public abstract Body getBody();
 
     public abstract void touch(ICollidable object, boolean collision);

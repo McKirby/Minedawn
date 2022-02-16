@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Tickable;
+import net.reindiegames.re2d.core.level.entity.Entity;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;

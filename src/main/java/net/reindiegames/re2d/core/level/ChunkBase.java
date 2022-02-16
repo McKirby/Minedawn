@@ -73,7 +73,7 @@ public class ChunkBase implements Tickable {
                 ICollidable a = (ICollidable) contact.m_fixtureA.m_userData;
                 ICollidable b = (ICollidable) contact.m_fixtureB.m_userData;
 
-                boolean enabled = a.collidesWith(b) && b.collidesWith(a);
+                boolean enabled = ICollidable.isCollision(a, b);
                 contact.setEnabled(enabled);
 
                 if (enabled) {
@@ -231,6 +231,10 @@ public class ChunkBase implements Tickable {
         synchronized (createdJoints) {
             createdJoints.add(def);
         }
+    }
+
+    public World getPhysics() {
+        return world;
     }
 
     @Override
