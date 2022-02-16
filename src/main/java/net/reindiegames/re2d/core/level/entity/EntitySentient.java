@@ -1,6 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
 import net.reindiegames.re2d.core.CoreParameters;
+import net.reindiegames.re2d.core.level.DamageSource;
 import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.joml.Random;
@@ -21,7 +22,7 @@ public class EntitySentient extends Entity implements ProjectileSource {
         this.navigator = new Navigator(this);
         this.goalSelector = new GoalSelector(this);
 
-        this.shootDelay = CoreParameters.TICK_RATE >> 4;
+        this.shootDelay = CoreParameters.TICK_RATE / 2L;
         this.lastShoot = 0L;
     }
 
