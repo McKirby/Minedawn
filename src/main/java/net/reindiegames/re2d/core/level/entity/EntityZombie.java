@@ -8,6 +8,7 @@ public class EntityZombie extends EntityLiving {
         super(EntityType.ZOMBIE, level, pos, 0.8f);
         super.setMaxSpeed(2.5f);
 
-        super.goalSelector.addGoal(new EntityGoalRandomStroll(this, 1, 1.0f, 0.1f, 3));
+        super.goalSelector.addGoal(new EntityGoalRandomStroll(1, this, 1.0f, 0.1f, 3));
+        super.goalSelector.addGoal(new EntityGoalMoveTowardsTarget<>(10, this, 0.0f, 1.0f, 10.0f, EntityPlayer.class));
     }
 }

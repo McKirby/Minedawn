@@ -9,8 +9,26 @@ public interface Pinpointable extends Positionable, Scaleable, Rotateable {
         return this.getPosition().add(size.x / 2.0f, size.y / 2.0f);
     }
 
+    public default Vector2f getTopLeft() {
+        final Vector2f size = this.getSize();
+        return this.getPosition().add(0.0f, size.y);
+    }
+
+    public default Vector2f getTopRight() {
+        final Vector2f size = this.getSize();
+        return this.getPosition().add(size.x, size.y);
+    }
+
+    public default Vector2f getBottomRight() {
+        final Vector2f size = this.getSize();
+        return this.getPosition().add(size.x, 0.0f);
+    }
+
+    public default Vector2f getBottomLeft() {
+        return this.getPosition();
+    }
+
     public default Vector2i getCenterTilePosition() {
-        final Vector2f center = this.getCenter();
-        return new Vector2i((int) center.x, (int) center.y);
+        return CoordinateSystems.levelToLevelTile(this.getCenter());
     }
 }

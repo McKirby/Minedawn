@@ -1,12 +1,12 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.Tickable;
-import net.reindiegames.re2d.core.level.entity.Entity;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.joints.Joint;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +79,15 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
 
     protected final void throttleVelocity(float throttle) {
         body.m_linearDamping = throttle;
+    }
+
+    public boolean moveTowards(Vector2i waypoint, float reachThreshold) {
+        Vector2f pos = this.getCenter();
+        float dx = (waypoint.x + 0.5f) - pos.x;
+        float dy = (waypoint.y + 0.5f) - pos.y;
+        this.move(dx, dy);
+
+        return new Vector2f(dx, dy).length() <= reachThreshold;
     }
 
     public final void move(float dx, float dy) {

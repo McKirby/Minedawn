@@ -242,8 +242,8 @@ public class ChunkBase implements Tickable {
         this.forEachEntity(entity -> {
             entity.syncTick(delta);
 
-            if (entity.dead) {
-                entity.die();
+            if (entity.isDead()) {
+                entity.removePhysics();
                 this.removeEntity(entity);
             }
         });

@@ -3,6 +3,7 @@ package net.reindiegames.re2d.client;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.entity.EntityArrow;
 import net.reindiegames.re2d.core.level.entity.EntityPlayer;
+import net.reindiegames.re2d.core.level.entity.EntityZombie;
 import org.joml.Vector2f;
 
 import static net.reindiegames.re2d.client.ClientParameters.*;

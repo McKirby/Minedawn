@@ -17,18 +17,18 @@ public class EntityLiving extends EntitySentient implements Damageable {
         super(type, level, pos, size);
         this.maxHealth = 20;
         this.health = maxHealth;
+
         this.lastDamageSource = null;
         this.lastDamage = -1;
     }
 
     public boolean isDead() {
-        return health <= 0;
+        return super.isDead() || health <= 0;
     }
 
     @Override
     public void syncTick(float delta) {
         super.syncTick(delta);
-        super.dead = this.isDead();
     }
 
     @Override

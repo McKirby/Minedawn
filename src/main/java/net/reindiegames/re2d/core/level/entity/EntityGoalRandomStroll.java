@@ -6,8 +6,8 @@ import org.joml.Vector2i;
 public class EntityGoalRandomStroll extends EntityGoal {
     protected int range;
 
-    public EntityGoalRandomStroll(EntitySentient entity, int priority, float cs, float chance, int range) {
-        super(entity, priority, cs, chance);
+    public EntityGoalRandomStroll(int prio, EntitySentient entity, float cooldown, float chance, int range) {
+        super(entity, prio, cooldown, chance);
         this.range = range;
     }
 

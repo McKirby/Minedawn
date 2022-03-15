@@ -21,7 +21,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
             if (object instanceof Damageable) {
                 ((Damageable) object).damage(this, 10);
             }
-            super.dead = true;
+            this.die();
         }
     }
 
@@ -43,7 +43,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
         super.syncTick(delta);
 
         if (this.getTimeExisted() > maxExistingTime) {
-            super.dead = true;
+            this.die();
         }
     }
 }

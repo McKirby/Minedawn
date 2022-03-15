@@ -17,7 +17,6 @@ public abstract class EntityGoal implements Comparable<EntityGoal> {
         this.cooldownTicks = (int) (CoreParameters.TICK_RATE * cooldownSeconds);
         this.lastYield = -1L;
         this.selectChance = chance;
-
     }
 
     public boolean select(long totalTicks) {
@@ -33,6 +32,9 @@ public abstract class EntityGoal implements Comparable<EntityGoal> {
     }
 
     public abstract boolean isDone(long totalTicks);
+
+    public void iterate(long totalTicks) {
+    }
 
     @Override
     public int compareTo(EntityGoal o) {

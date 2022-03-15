@@ -1,5 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import net.reindiegames.re2d.core.CoreParameters;
+
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
@@ -24,6 +26,9 @@ public class GoalSelector {
 
     public void cancel() {
         synchronized (goals) {
+            if(active != null) {
+                active.yield(totalTicks);
+            }
             this.active = null;
         }
     }
@@ -31,6 +36,8 @@ public class GoalSelector {
     public boolean select() {
         synchronized (goals) {
             if (active != null) {
+                active.iterate(totalTicks);
+
                 if (active.isDone(totalTicks)) {
                     active.yield(totalTicks);
                     active = null;

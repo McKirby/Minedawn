@@ -6,6 +6,7 @@ import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
 import net.reindiegames.re2d.core.level.GeneratedLevel;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.TileType;
+import net.reindiegames.re2d.core.level.entity.EntityZombie;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
@@ -90,8 +91,7 @@ public class ClientContext extends GameContext {
 
             switch (button) {
                 case GLFW.GLFW_MOUSE_BUTTON_1 -> {
-                    player.hasLineOfSight(goal);
-                    player.level.setTileType(goal, TileType.MUSHROOM);
+                    player.level.spawn(EntityZombie.class, goal);
                 }
                 case GLFW.GLFW_MOUSE_BUTTON_2 -> {
                     player.level.setTileType(goal, TileType.STONE_WALL);

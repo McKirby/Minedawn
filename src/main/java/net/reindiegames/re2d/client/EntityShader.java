@@ -21,7 +21,7 @@ public class EntityShader extends LevelShader {
 
     public void loadEntity(Entity entity) {
         if (entity instanceof Damageable) {
-            super.loadBoolean(hurtLocation, ((Damageable) entity).wasDamagedSince(0.1f));
+            super.loadBoolean(hurtLocation, ((Damageable) entity).wasDamagedSince(0.1f) || entity.isFeatured());
         }
     }
 }

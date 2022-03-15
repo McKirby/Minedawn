@@ -1,7 +1,6 @@
 package net.reindiegames.re2d.core.level.entity;
 
 import net.reindiegames.re2d.core.CoreParameters;
-import net.reindiegames.re2d.core.level.DamageSource;
 import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.joml.Random;
@@ -40,27 +39,26 @@ public class EntitySentient extends Entity implements ProjectileSource {
     }
 
     @Override
-    public void syncTick(float delta) {
-        super.syncTick(delta);
-        goalSelector.select();
-    }
-
-    @Override
     public void asyncTick(float delta) {
-        Vector2i nextWaypoint = navigator.nextWaypoint();
-        if (nextWaypoint != null) {
-            Vector2f pos = this.getCenter();
-            float dx = (nextWaypoint.x + 0.5f) - pos.x;
-            float dy = (nextWaypoint.y + 0.5f) - pos.y;
-            this.move(dx, dy);
+        if (navigator.isNavigating()) {
+            Vector2i waypoint = waypoint = navigator.nextWaypoint();
 
-            if (new Vector2f(dx, dy).length() <= 0.1f) {
-                if (navigator.progressIndex()) {
-                    this.halt();
+            if (waypoint != null) {
+                if (this.moveTowards(waypoint, 0.1f)) {
+                    if (navigator.progressIndex()) {
+                        this.halt();
+                    }
                 }
             }
         }
+
         super.asyncTick(delta);
+    }
+
+    @Override
+    public void syncTick(float delta) {
+        super.syncTick(delta);
+        goalSelector.select();
     }
 
     @Override
