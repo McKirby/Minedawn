@@ -40,6 +40,8 @@ public abstract class Entity extends ACollidable {
     public <E extends Entity> Stream<E> visibleEntities(Class<E> type, float distance, boolean shuffle) {
         final List<E> found = new ArrayList<>();
         level.getChunkBase().forEachEntity(entity -> {
+            if (entity.equals(Entity.this)) return;
+
             if (type.isInstance(entity) && this.hasLineOfSight(entity, distance, false)) {
                 found.add((E) entity);
             }
@@ -56,21 +58,37 @@ public abstract class Entity extends ACollidable {
     }
 
     public boolean hasLineOfSight(Entity entity, float maxDistance, boolean full) {
-        boolean tr = this.hasLineOfSight(entity.getTopRight(), maxDistance, true);
-        boolean tl = this.hasLineOfSight(entity.getTopLeft(), maxDistance, true);
-        boolean br = this.hasLineOfSight(entity.getBottomRight(), maxDistance, true);
-        boolean bl = this.hasLineOfSight(entity.getBottomLeft(), maxDistance, true);
+        final Vector2f[] own = new Vector2f[] {
+                this.getTopRight(),
+                this.getTopLeft(),
+                this.getBottomRight(),
+                this.getBottomLeft(),
+        };
+        final Vector2f[] other = new Vector2f[] {
+                entity.getTopRight(),
+                entity.getTopLeft(),
+                entity.getBottomRight(),
+                entity.getBottomLeft(),
+        };
 
-        if (full) {
-            return tr && tl && br && bl;
-        } else {
-            return tr || tl || br || bl;
+        for (int i = 0; i < own.length; i++) {
+            for (int j = 0; j < other.length; j++) {
+                if (this.hasLineOfSight(own[i], other[j], maxDistance, true)) {
+                    if (!full) return true;
+                } else {
+                    if (full) return false;
+                }
+            }
         }
+        return full;
     }
 
     public boolean hasLineOfSight(Vector2f pos, float maxDistance, boolean invisibleEntities) {
-        final Vector2f center = this.getCenter();
-        if (center.distanceSquared(pos) > (maxDistance * maxDistance)) return false;
+        return this.hasLineOfSight(this.getCenter(), pos, maxDistance, invisibleEntities);
+    }
+
+    public boolean hasLineOfSight(Vector2f anchor, Vector2f pos, float maxDistance, boolean invisibleEntities) {
+        if (anchor.distanceSquared(pos) > (maxDistance * maxDistance)) return false;
 
         boolean[] result = new boolean[1];
         result[0] = true;
@@ -88,7 +106,7 @@ public abstract class Entity extends ACollidable {
             } else {
                 return 1.0f;
             }
-        }, new Vec2(center.x, center.y), new Vec2(pos.x, pos.y));
+        }, new Vec2(anchor.x, anchor.y), new Vec2(pos.x, pos.y));
 
         return result[0];
     }

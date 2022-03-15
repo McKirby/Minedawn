@@ -2,6 +2,10 @@ package net.reindiegames.re2d.core.level.entity;
 
 public abstract class
 EntityTargetGoal<E extends Entity> extends EntityGoal {
+    protected static final byte UNKNOWN = 1;
+    protected static final byte OUT_OF_SIGHT = 2;
+    protected static final byte OUT_OF_REACH = 3;
+
     protected final Class<E> type;
     protected final float distance;
 
@@ -22,8 +26,12 @@ EntityTargetGoal<E extends Entity> extends EntityGoal {
         return target != null && target.isAlive();
     }
 
-    public void loseTarget() {
+    public void loseTarget(byte reason) {
         this.target = null;
+    }
+
+    public void fixTarget(E entity) {
+        this.target = entity;
     }
 
     @Override
@@ -31,9 +39,7 @@ EntityTargetGoal<E extends Entity> extends EntityGoal {
         if (!super.select(totalTicks)) return false;
         if (this.hasTarget()) return false;
 
-        entity.visibleEntities(type, distance, false).findFirst().ifPresent(target -> {
-            this.target = target;
-        });
+        entity.visibleEntities(type, distance, false).findFirst().ifPresent(this::fixTarget);
         return this.hasTarget();
     }
 
@@ -44,7 +50,7 @@ EntityTargetGoal<E extends Entity> extends EntityGoal {
     @Override
     public void yield(long totalTicks) {
         super.yield(totalTicks);
-        this.loseTarget();
+        this.target = null;
     }
 
     @Override
@@ -57,7 +63,7 @@ EntityTargetGoal<E extends Entity> extends EntityGoal {
         if (entity.hasLineOfSight(target, distance, false)) {
             this.targetAcquired();
         } else {
-            this.loseTarget();
+            this.loseTarget(OUT_OF_SIGHT);
         }
     }
 }
