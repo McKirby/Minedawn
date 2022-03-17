@@ -22,6 +22,7 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
 
     private final List<Joint> joints;
     private float defaultSpeedThrottle;
+    private float baseMaxSpeed;
     private float maxSpeed;
 
     protected ACollidable(Level l, Vector2f pos, Vector2f size, BodyType type, float maxSpeed) {
@@ -61,8 +62,21 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
         return this.getVelocity().length() * SPEED_FACTOR;
     }
 
+    public float getBaseMaxSpeed() {
+        return baseMaxSpeed;
+    }
+
+    public void setBaseMaxSpeed(float speed) {
+        this.baseMaxSpeed = speed;
+        this.resetMaxSpeed();
+    }
+
     public void setMaxSpeed(float speed) {
         this.maxSpeed = Math.max(0.0f, speed);
+    }
+
+    public void resetMaxSpeed() {
+        this.setMaxSpeed(baseMaxSpeed);
     }
 
     protected final void clampVelocity() {

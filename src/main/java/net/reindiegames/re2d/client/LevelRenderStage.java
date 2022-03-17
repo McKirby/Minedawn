@@ -43,14 +43,17 @@ public abstract class LevelRenderStage<S extends LevelShader, O> extends RenderS
     }
 
     protected final void renderMesh(Transformable t, Mesh mesh) {
-        GL30.glBindVertexArray(mesh.vao);
-
         if (t.changed || tileScaleChanged) {
             Shader.generateTransformation(t.transformation, t.getPosition(), t.size, t.getRotation());
         }
 
-        shader.loadTransformation(t.transformation);
+        this.renderMesh(t.transformation, mesh);
         t.changed = false;
+    }
+
+    protected final void renderMesh(float[] transform, Mesh mesh) {
+        GL30.glBindVertexArray(mesh.vao);
+        shader.loadTransformation(transform);
 
         if (debug) {
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, mesh.lineIndicesVbo);

@@ -7,11 +7,12 @@ import net.reindiegames.re2d.core.level.Level;
 import org.joml.Vector2f;
 
 public class EntityLiving extends EntitySentient implements Damageable {
-    public int health;
-    public int maxHealth;
-
     protected DamageSource lastDamageSource;
     protected long lastDamage;
+    protected boolean combat;
+    protected int outOfCombatRegeneration;
+    private int health;
+    private int maxHealth;
 
     protected EntityLiving(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
@@ -20,15 +21,34 @@ public class EntityLiving extends EntitySentient implements Damageable {
 
         this.lastDamageSource = null;
         this.lastDamage = -1;
+
+        this.combat = false;
+        this.outOfCombatRegeneration = 1;
     }
 
     public boolean isDead() {
         return super.isDead() || health <= 0;
     }
 
+    public float getHealthRatio() {
+        return ((float) health) / ((float) maxHealth);
+    }
+
+    public void heal(int rawHealth) {
+        this.health = Math.min(health + rawHealth, maxHealth);
+    }
+
+    public boolean isInCombat() {
+        return combat;
+    }
+
     @Override
     public void syncTick(float delta) {
         super.syncTick(delta);
+
+        if (!combat && CoreParameters.totalTicks % CoreParameters.TICK_RATE == 0) {
+            this.heal(outOfCombatRegeneration);
+        }
     }
 
     @Override

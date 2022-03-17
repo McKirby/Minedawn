@@ -16,6 +16,8 @@ public class EntitySentient extends Entity implements ProjectileSource {
     protected long shootDelay;
     protected long lastShoot;
 
+    protected long idleTicks;
+
     protected EntitySentient(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
         this.random = new Random();
@@ -25,6 +27,8 @@ public class EntitySentient extends Entity implements ProjectileSource {
 
         this.shootDelay = CoreParameters.TICK_RATE / 2L;
         this.lastShoot = 0L;
+
+        this.idleTicks = 0L;
     }
 
     @Override
@@ -46,6 +50,7 @@ public class EntitySentient extends Entity implements ProjectileSource {
             Vector2i waypoint = waypoint = navigator.nextWaypoint();
 
             if (waypoint != null) {
+                this.idleTicks = 0L;
                 if (this.moveTowards(waypoint, 0.1f)) {
                     if (navigator.progressIndex()) {
                         this.halt();
@@ -61,7 +66,11 @@ public class EntitySentient extends Entity implements ProjectileSource {
     public void syncTick(float delta) {
         super.syncTick(delta);
         targetSelector.select();
-        goalSelector.select();
+        if (goalSelector.select()) {
+            this.idleTicks = 0L;
+        } else {
+            this.idleTicks++;
+        }
     }
 
     @Override

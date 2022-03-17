@@ -19,7 +19,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
     public void touch(ICollidable object, boolean collision) {
         if (collision) {
             if (object instanceof Damageable) {
-                ((Damageable) object).damage(this, 10);
+                ((Damageable) object).damage(this, 2);
             }
             this.die();
         }

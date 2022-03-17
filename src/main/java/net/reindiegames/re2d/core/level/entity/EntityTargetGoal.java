@@ -1,9 +1,13 @@
 package net.reindiegames.re2d.core.level.entity;
 
+import org.joml.Vector2f;
+
 public abstract class EntityTargetGoal<E extends Entity> extends EntityGoal implements TargetReceiver<E> {
     protected final Class<E> targetClass;
     protected final float targetDistance;
+
     protected E target;
+    protected Vector2f lastSeen;
 
     public EntityTargetGoal(
             int prio, EntitySentient entity, float cooldown, float chance,
@@ -42,13 +46,14 @@ public abstract class EntityTargetGoal<E extends Entity> extends EntityGoal impl
 
     @Override
     public void loseTarget() {
-        System.out.println("Lose");
+        if (target != null) {
+            this.lastSeen = target.getCenter();
+        }
         this.target = null;
     }
 
     @Override
     public boolean offerTarget(Entity target) {
-        System.out.println("Offer");
         return targetClass.isInstance(target);
     }
 }
