@@ -7,7 +7,7 @@ public class EntityGoalRandomStroll extends EntityGoal {
     protected int range;
 
     public EntityGoalRandomStroll(int prio, EntitySentient entity, float cooldown, float chance, int range) {
-        super(entity, prio, cooldown, chance);
+        super(prio, entity, cooldown, chance);
         this.range = range;
     }
 
@@ -18,6 +18,8 @@ public class EntityGoalRandomStroll extends EntityGoal {
 
     @Override
     public void execute(long totalTicks) {
+        super.execute(totalTicks);
+
         final Vector2i pos = entity.getCenterTilePosition();
         int goalX = pos.x + entity.random.nextInt(range) * (entity.random.nextFloat() < 0.5f ? 1 : -1);
         int goalY = pos.y + entity.random.nextInt(range) * (entity.random.nextFloat() < 0.5f ? 1 : -1);

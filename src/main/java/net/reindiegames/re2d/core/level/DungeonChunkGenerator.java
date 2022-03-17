@@ -362,7 +362,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
         }
 
         this.stream().filter(t -> (t.type != WALL) && random.nextFloat() < 0.05f).forEach(t -> {
-            generatedLevel.spawn(EntityZombie.class, new Vector2f(t.x * scale, t.y * scale));
+            //generatedLevel.spawn(EntityZombie.class, new Vector2f(t.x * scale, t.y * scale));
         });
     }
 

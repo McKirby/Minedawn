@@ -9,6 +9,7 @@ import org.joml.Vector2i;
 
 public class EntitySentient extends Entity implements ProjectileSource {
     public final Random random;
+    public final TargetSelector targetSelector;
     public final Navigator navigator;
     public final GoalSelector goalSelector;
 
@@ -18,6 +19,7 @@ public class EntitySentient extends Entity implements ProjectileSource {
     protected EntitySentient(EntityType type, Level level, Vector2f pos, float size) {
         super(type, level, pos, size);
         this.random = new Random();
+        this.targetSelector = new TargetSelector(this);
         this.navigator = new Navigator(this);
         this.goalSelector = new GoalSelector(this);
 
@@ -58,6 +60,7 @@ public class EntitySentient extends Entity implements ProjectileSource {
     @Override
     public void syncTick(float delta) {
         super.syncTick(delta);
+        targetSelector.select();
         goalSelector.select();
     }
 
@@ -76,7 +79,6 @@ public class EntitySentient extends Entity implements ProjectileSource {
 
     @Override
     public void collision(ICollidable object) {
-        goalSelector.cancel();
         this.halt();
     }
 }

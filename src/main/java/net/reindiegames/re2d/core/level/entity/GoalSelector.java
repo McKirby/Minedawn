@@ -18,7 +18,7 @@ public class GoalSelector {
         this.goals = new PriorityQueue<>();
     }
 
-    public void addGoal(EntityGoal goal) {
+    public void add(EntityGoal goal) {
         synchronized (goals) {
             goals.add(goal);
         }
@@ -33,16 +33,15 @@ public class GoalSelector {
         }
     }
 
-    public boolean select() {
+    public void select() {
         synchronized (goals) {
             if (active != null) {
-                active.iterate(totalTicks);
-
                 if (active.isDone(totalTicks)) {
                     active.yield(totalTicks);
                     active = null;
+                } else {
+                    active.iterate(totalTicks);
                 }
-                return true;
             }
 
             final Iterator<EntityGoal> goalIt = goals.iterator();
@@ -57,9 +56,7 @@ public class GoalSelector {
                 } else {
                     active = goal;
                 }
-                return true;
             }
-            return false;
         }
     }
 

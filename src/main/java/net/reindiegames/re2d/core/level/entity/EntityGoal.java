@@ -10,7 +10,7 @@ public abstract class EntityGoal implements Comparable<EntityGoal> {
     protected long lastYield;
     protected float selectChance;
 
-    public EntityGoal(EntitySentient entity, int priority, float cooldownSeconds, float chance) {
+    public EntityGoal(int priority, EntitySentient entity, float cooldownSeconds, float chance) {
         this.entity = entity;
         this.priority = priority;
 
@@ -25,15 +25,16 @@ public abstract class EntityGoal implements Comparable<EntityGoal> {
         return c && r;
     }
 
-    public abstract void execute(long totalTicks);
+    public void execute(long totalTicks) {
+    }
 
-    public void yield(long totalTicks) {
-        this.lastYield = totalTicks;
+    public void iterate(long totalTicks) {
     }
 
     public abstract boolean isDone(long totalTicks);
 
-    public void iterate(long totalTicks) {
+    public void yield(long totalTicks) {
+        this.lastYield = totalTicks;
     }
 
     @Override
