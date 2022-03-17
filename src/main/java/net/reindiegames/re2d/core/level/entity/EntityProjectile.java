@@ -31,7 +31,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
 
     @Override
     public boolean collidesWith(ICollidable object) {
-        return object instanceof EntitySentient && !object.equals(source);
+        return (object instanceof EntitySentient && !object.equals(source)) || object instanceof Tile;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
     public void syncTick(float delta) {
         super.syncTick(delta);
 
-        if (this.getTimeExisted() > maxExistingTime) {
+        if (this.getTicksLived() > maxExistingTime) {
             this.die();
         }
     }

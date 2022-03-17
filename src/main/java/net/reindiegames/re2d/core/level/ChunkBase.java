@@ -30,7 +30,6 @@ public class ChunkBase implements Tickable {
     private final Set<Entity> entities;
     private final Set<Entity> deadEntities;
     private final Set<TileEntity> tileEntities;
-    private final List<JointDef> createdJoints;
 
     private int nextEntityId;
     private int nextTileEntityId;
@@ -45,7 +44,6 @@ public class ChunkBase implements Tickable {
         this.entities = new HashSet<>();
         this.deadEntities = new HashSet<>();
         this.tileEntities = new HashSet<>();
-        this.createdJoints = new ArrayList<>();
 
         this.world = new World(new Vec2(0.0f, 0.0f));
 
@@ -227,12 +225,6 @@ public class ChunkBase implements Tickable {
         }
     }
 
-    public void createJoint(JointDef def) {
-        synchronized (createdJoints) {
-            createdJoints.add(def);
-        }
-    }
-
     public World getPhysics() {
         return world;
     }
@@ -255,11 +247,6 @@ public class ChunkBase implements Tickable {
         deadEntities.clear();
 
         this.forEachTileEntity(tileEntity -> tileEntity.syncTick(delta));
-
-        for (JointDef def : createdJoints) {
-            world.createJoint(def);
-        }
-        createdJoints.clear();
     }
 
     @Override

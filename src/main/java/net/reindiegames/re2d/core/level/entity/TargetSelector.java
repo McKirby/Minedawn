@@ -29,7 +29,7 @@ public class TargetSelector {
                     receiver.loseTarget();
                 }
             } else {
-                entity.visibleEntities(receiver.getTargetClass(), receiver.getTargetDistance(), false).filter(e -> {
+                entity.visibleEntities(receiver.getTargetClass(), receiver.getTargetDistance()).filter(e -> {
                     return receiver.offerTarget(e);
                 }).findFirst().ifPresent(newTarget -> {
                     receiver.setTarget(newTarget);

@@ -42,6 +42,7 @@ public class GoalSelector {
                 } else {
                     active.iterate(totalTicks);
                 }
+                return;
             }
 
             final Iterator<EntityGoal> goalIt = goals.iterator();

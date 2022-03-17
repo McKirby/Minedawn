@@ -9,7 +9,7 @@ import org.jbox2d.dynamics.BodyType;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -37,7 +37,15 @@ public abstract class Entity extends ACollidable {
         this.actionState = 0;
     }
 
-    public <E extends Entity> Stream<E> visibleEntities(Class<E> type, float distance, boolean shuffle) {
+    public <E extends Entity> Stream<E> visibleEntities(Class<E> type, float distance) {
+        final Vector2f center = this.getCenter();
+
+        return this.visibleEntities(type, distance, (e1, e2) -> {
+            return Float.compare(e1.getCenter().distanceSquared(center), e2.getCenter().distance(center));
+        });
+    }
+
+    public <E extends Entity> Stream<E> visibleEntities(Class<E> type, float distance, Comparator<E> comparator) {
         final List<E> found = new ArrayList<>();
         level.getChunkBase().forEachEntity(entity -> {
             if (entity.equals(Entity.this)) return;
@@ -47,13 +55,7 @@ public abstract class Entity extends ACollidable {
             }
         });
 
-        if (shuffle) {
-            Collections.shuffle(found);
-        } else {
-            final Vector2f center = this.getCenter();
-            found.sort((e1, e2) -> Float.compare(e1.getCenter().distanceSquared(center), e2.getCenter().distance(center)));
-        }
-
+        if (comparator != null) found.sort(comparator);
         return found.stream();
     }
 
@@ -71,9 +73,9 @@ public abstract class Entity extends ACollidable {
                 entity.getBottomLeft(),
         };
 
-        for (int i = 0; i < own.length; i++) {
-            for (int j = 0; j < other.length; j++) {
-                if (this.hasLineOfSight(own[i], other[j], maxDistance, true)) {
+        for (Vector2f vector2f : own) {
+            for (Vector2f f : other) {
+                if (this.hasLineOfSight(vector2f, f, maxDistance, true)) {
                     if (!full) return true;
                 } else {
                     if (full) return false;
@@ -81,10 +83,6 @@ public abstract class Entity extends ACollidable {
             }
         }
         return full;
-    }
-
-    public boolean hasLineOfSight(Vector2f pos, float maxDistance, boolean invisibleEntities) {
-        return this.hasLineOfSight(this.getCenter(), pos, maxDistance, invisibleEntities);
     }
 
     public boolean hasLineOfSight(Vector2f anchor, Vector2f pos, float maxDistance, boolean invisibleEntities) {
@@ -111,7 +109,7 @@ public abstract class Entity extends ACollidable {
         return result[0];
     }
 
-    public long getTimeExisted() {
+    public long getTicksLived() {
         return CoreParameters.totalTicks - timeCreated;
     }
 

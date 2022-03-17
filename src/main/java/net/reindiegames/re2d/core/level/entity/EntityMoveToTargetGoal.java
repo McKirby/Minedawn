@@ -1,7 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
-public class EntityGoalMoveToTarget<E extends Entity> extends EntityGoalTarget<E> {
-    public EntityGoalMoveToTarget(
+public class EntityMoveToTargetGoal<E extends Entity> extends EntityTargetGoal<E> {
+    public EntityMoveToTargetGoal(
             int prio, EntitySentient entity, float cooldown, float chance,
             Class<E> targetClass, float distance
     ) {

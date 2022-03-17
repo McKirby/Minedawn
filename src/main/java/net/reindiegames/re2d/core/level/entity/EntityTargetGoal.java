@@ -1,11 +1,11 @@
 package net.reindiegames.re2d.core.level.entity;
 
-public abstract class EntityGoalTarget<E extends Entity> extends EntityGoal implements TargetReceiver<E> {
+public abstract class EntityTargetGoal<E extends Entity> extends EntityGoal implements TargetReceiver<E> {
     protected final Class<E> targetClass;
     protected final float targetDistance;
     protected E target;
 
-    public EntityGoalTarget(
+    public EntityTargetGoal(
             int prio, EntitySentient entity, float cooldown, float chance,
             Class<E> targetClass, float distance
     ) {
@@ -42,11 +42,13 @@ public abstract class EntityGoalTarget<E extends Entity> extends EntityGoal impl
 
     @Override
     public void loseTarget() {
+        System.out.println("Lose");
         this.target = null;
     }
 
     @Override
     public boolean offerTarget(Entity target) {
+        System.out.println("Offer");
         return targetClass.isInstance(target);
     }
 }

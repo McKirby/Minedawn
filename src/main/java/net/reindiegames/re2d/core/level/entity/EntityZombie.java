@@ -10,7 +10,7 @@ public class EntityZombie extends EntityLiving {
         super.setMaxSpeed(2.5f);
 
         super.goalSelector.add(new EntityGoalRandomStroll(1, this, 1.0f, 0.1f, 3));
-        super.goalSelector.add(new EntityGoalMoveToTarget<>(10, this, 0.0f, 1.0f, EntityPlayer.class, 25.0f));
+        super.goalSelector.add(new EntityMoveToTargetGoal<>(10, this, 0.0f, 0.25f, EntityPlayer.class, 15.0f));
     }
 
     @Override
