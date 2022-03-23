@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.entity.EntityArrow;
 import net.reindiegames.re2d.core.level.entity.EntityPlayer;
@@ -42,10 +43,17 @@ public class EntityClientPlayer extends EntityPlayer {
         }
 
         if (Input.SHOOT.isPressed()) {
-            final Vector2f dir = Input.getCursorLevelPosition().sub(this.getCenter());
-            dir.normalize();
-            this.shoot(EntityArrow.class, dir, 20.0f);
+            this.shoot(EntityArrow.class, Input.getCursorLevelPosition().sub(this.getCenter()).normalize());
         }
         super.asyncTick(delta);
+    }
+
+    @Override
+    public void syncTick(float delta) {
+        super.syncTick(delta);
+
+        if(this.isDead()) {
+            GameContext.getInstance().stop();
+        }
     }
 }

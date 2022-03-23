@@ -17,7 +17,13 @@ import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 public abstract class GameContext {
     public static final DayNightCircle DAY_NIGHT_CIRCLE = new DayNightCircle();
 
+    private static GameContext runningContext;
+
     protected GameContext() {
+    }
+
+    public static GameContext getInstance() {
+        return runningContext;
     }
 
     public static void main(String[] args) {
@@ -44,8 +50,8 @@ public abstract class GameContext {
             Log.info("Finalizing Context...");
             Constructor constructor = contextImpl.getDeclaredConstructor();
             constructor.setAccessible(true);
-            GameContext context = (GameContext) constructor.newInstance();
-            context.start();
+            runningContext = (GameContext) constructor.newInstance();
+            runningContext.start();
         } catch (Exception e) {
             Log.error("Failed to initialize Context (" + e.getMessage() + ")!");
             e.printStackTrace();
@@ -69,6 +75,8 @@ public abstract class GameContext {
     protected abstract void asyncTick(float delta);
 
     protected abstract boolean shouldClose();
+
+    public abstract void stop();
 
     protected abstract String debugInfo(int syncTicks, int asyncTicks);
 

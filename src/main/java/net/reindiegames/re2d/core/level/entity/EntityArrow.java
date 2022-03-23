@@ -5,6 +5,6 @@ import org.joml.Vector2f;
 
 public class EntityArrow extends EntityProjectile {
     protected EntityArrow(Level level, Vector2f pos) {
-        super(EntityType.ARROW, level, pos, 0.3f);
+        super(EntityType.ARROW, level, pos, false, 0.3f);
     }
 }

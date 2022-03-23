@@ -1,7 +1,10 @@
 {
   "meta": {
     "id": 3,
-    "name": "Arrow"
+    "name": "Arrow",
+    "attributes": {
+      "speed": 15.0
+    }
   },
   "client": {
     "atlas": "TERRAIN_01",

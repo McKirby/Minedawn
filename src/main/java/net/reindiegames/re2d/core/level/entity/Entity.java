@@ -6,6 +6,8 @@ import net.reindiegames.re2d.core.level.ICollidable;
 import net.reindiegames.re2d.core.level.Level;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.Fixture;
+import org.joml.Random;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -18,28 +20,34 @@ public abstract class Entity extends ACollidable {
 
     public final EntityType type;
     public final int entityId;
+    public final Fixture fixture;
+    public final Random random;
 
     public long timeCreated;
     public short action;
     public short actionState;
+
+    public long idleTicks;
     private boolean dead;
 
-    protected Entity(EntityType type, Level level, Vector2f pos, float size) {
-        super(level, pos, new Vector2f(size, size), BodyType.DYNAMIC, 10.0f);
+    protected Entity(EntityType type, Level level, Vector2f pos, boolean throttle, float size) {
+        super(level, pos, new Vector2f(size, size), BodyType.DYNAMIC, throttle, 10.0f);
         this.type = type;
         this.entityId = level.getChunkBase().nextEntityId();
-
-        level.getChunkBase().createBoundingSphere(this, body, size, ENTITY_PADDING);
+        this.fixture = level.getChunkBase().createBoundingSphere(this, body, size, ENTITY_PADDING);
+        this.random = new Random();
 
         this.timeCreated = CoreParameters.totalTicks;
-        this.dead = false;
         this.action = 0;
         this.actionState = 0;
+
+        this.idleTicks = 0L;
+        this.dead = false;
+        this.setMaxSpeed(type.speed);
     }
 
     public <E extends Entity> Stream<E> visibleEntities(Class<E> type, float distance) {
         final Vector2f center = this.getCenter();
-
         return this.visibleEntities(type, distance, (e1, e2) -> {
             return Float.compare(e1.getCenter().distanceSquared(center), e2.getCenter().distance(center));
         });
@@ -117,7 +125,7 @@ public abstract class Entity extends ACollidable {
         return dead;
     }
 
-    public boolean isAlive() {
+    public final boolean isAlive() {
         return !this.isDead();
     }
 
@@ -131,6 +139,7 @@ public abstract class Entity extends ACollidable {
 
     @Override
     public void syncTick(float delta) {
+        this.idleTicks = this.isMoving() ? 0 : idleTicks + 1;
         super.syncTick(delta);
     }
 

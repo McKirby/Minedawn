@@ -4,12 +4,8 @@ import net.reindiegames.re2d.core.Tickable;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.joints.Joint;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static net.reindiegames.re2d.core.CoreParameters.TICK_RATE;
 import static net.reindiegames.re2d.core.level.Level.VELOCITY_PRECISION;
@@ -20,31 +16,16 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
     public final Level level;
     public final Body body;
 
-    private final List<Joint> joints;
-    private float defaultSpeedThrottle;
-    private float baseMaxSpeed;
     private float maxSpeed;
 
-    protected ACollidable(Level l, Vector2f pos, Vector2f size, BodyType type, float maxSpeed) {
-        this(l, pos, size, type, 1.0f, maxSpeed);
-    }
-
-    protected ACollidable(Level l, Vector2f p, Vector2f s, BodyType t, float speedThrottle, float maxSpeed) {
+    protected ACollidable(Level l, Vector2f p, Vector2f s, BodyType t, boolean throttle, float maxSpeed) {
         super(s);
         this.level = l;
 
-        this.joints = new ArrayList<>();
-        this.defaultSpeedThrottle = speedThrottle;
-        this.maxSpeed = maxSpeed;
-
         this.body = l.getChunkBase().createBody(this, t, p.x, p.y);
         body.m_userData = this;
-        body.m_linearDamping = speedThrottle;
         body.m_mass = s.x * s.y;
-    }
-
-    public void setSpeedThrottle(float throttle) {
-        body.m_linearDamping = throttle;
+        body.m_linearDamping = throttle ? 1.0f : 0.0f;
     }
 
     @Override
@@ -53,30 +34,21 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
         return new Vector2f(pos.x, pos.y);
     }
 
-    public final Vector2f getVelocity() {
-        final Vec2 velocity = body.getLinearVelocity();
-        return new Vector2f(velocity.x, velocity.y);
-    }
-
     public final float getSpeed() {
         return this.getVelocity().length() * SPEED_FACTOR;
     }
 
-    public float getBaseMaxSpeed() {
-        return baseMaxSpeed;
+    public final float getMaxSpeed() {
+        return maxSpeed;
     }
 
-    public void setBaseMaxSpeed(float speed) {
-        this.baseMaxSpeed = speed;
-        this.resetMaxSpeed();
-    }
-
-    public void setMaxSpeed(float speed) {
+    public final void setMaxSpeed(float speed) {
         this.maxSpeed = Math.max(0.0f, speed);
     }
 
-    public void resetMaxSpeed() {
-        this.setMaxSpeed(baseMaxSpeed);
+    public final Vector2f getVelocity() {
+        final Vec2 velocity = body.getLinearVelocity();
+        return new Vector2f(velocity.x, velocity.y);
     }
 
     protected final void clampVelocity() {
@@ -85,14 +57,6 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
             velocity.normalize();
             body.setLinearVelocity(velocity.mul(maxSpeed / SPEED_FACTOR));
         }
-    }
-
-    protected final void throttleVelocity() {
-        this.throttleVelocity(defaultSpeedThrottle);
-    }
-
-    protected final void throttleVelocity(float throttle) {
-        body.m_linearDamping = throttle;
     }
 
     public boolean moveTowards(Vector2i waypoint, float reachThreshold) {
@@ -105,7 +69,7 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
     }
 
     public final void move(float dx, float dy) {
-        this.throttleVelocity(0.0f);
+        this.slide();
 
         final Vec2 dir = new Vec2(dx, dy);
         dir.normalize();
@@ -114,7 +78,11 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
     }
 
     public void halt() {
-        this.throttleVelocity();
+        body.m_linearDamping = 1.0f;
+    }
+
+    public void slide() {
+        body.m_linearDamping = 0.0f;
     }
 
     public final boolean isMoving() {
@@ -137,6 +105,8 @@ public abstract class ACollidable extends Transformable implements Tickable, ICo
 
     @Override
     public void asyncTick(float delta) {
-        if (this.isMoving()) super.changed = true;
+        if (this.isMoving()) {
+            super.changed = true;
+        }
     }
 }

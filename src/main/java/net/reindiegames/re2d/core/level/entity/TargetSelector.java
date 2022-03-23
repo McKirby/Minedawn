@@ -17,7 +17,7 @@ public class TargetSelector {
     }
 
     public boolean validTarget(Entity target, float distance) {
-        return target.isAlive() && entity.hasLineOfSight(target, distance, false);
+        return entity.isHostileTowards(target) && target.isAlive() && entity.hasLineOfSight(target, distance, false);
     }
 
     public void select() {

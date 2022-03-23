@@ -20,6 +20,7 @@ public class EntityType extends GameResource {
     private static final Map<String, EntityType> RESOURCE_ENTITY_MAP = new HashMap<>();
 
     protected short[] states;
+    protected float speed;
 
     private EntityType(String resource) {
         super(resource);
@@ -56,7 +57,6 @@ public class EntityType extends GameResource {
     @Override
     public void load(JsonObject source) {
         final JsonArray actionArray = source.get("client").getAsJsonObject().get("sprites").getAsJsonArray();
-
         this.states = new short[actionArray.size()];
         for (int action = 0; action < states.length; action++) {
             JsonElement element = actionArray.get(action);
@@ -66,6 +66,9 @@ public class EntityType extends GameResource {
                 states[action] = 1;
             }
         }
+
+        final JsonObject attributeObjects = source.get("meta").getAsJsonObject().get("attributes").getAsJsonObject();
+        this.speed = attributeObjects.get("speed").getAsFloat();
     }
 
     @Override

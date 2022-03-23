@@ -8,9 +8,8 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
     protected ProjectileSource source;
     protected long maxExistingTime;
 
-    protected EntityProjectile(EntityType type, Level level, Vector2f pos, float size) {
-        super(type, level, pos, size);
-        super.setSpeedThrottle(0.0f);
+    protected EntityProjectile(EntityType type, Level level, Vector2f pos, boolean throttle, float size) {
+        super(type, level, pos, throttle, size);
         this.maxExistingTime = CoreParameters.TICK_RATE * 4;
         body.setBullet(true);
     }

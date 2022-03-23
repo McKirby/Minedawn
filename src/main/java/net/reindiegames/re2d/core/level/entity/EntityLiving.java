@@ -6,33 +6,43 @@ import net.reindiegames.re2d.core.level.Damageable;
 import net.reindiegames.re2d.core.level.Level;
 import org.joml.Vector2f;
 
-public class EntityLiving extends EntitySentient implements Damageable {
+import java.util.HashMap;
+import java.util.Map;
+
+public abstract class EntityLiving extends EntitySentient implements Damageable {
+    public static final float INVULNERABLE_SECONDS_AFTER_DAMAGE = 1.0f;
+
     private int maxHealth;
     private int health;
     protected int naturalRegeneration;
+    protected boolean invulnerable;
 
     private boolean combat;
-    private boolean alwaysInCombat;
+    private boolean stayInCombat;
     private long lastCombatEntry;
     private long outOfCombatTicks;
 
     protected DamageSource lastDamageSource;
+    protected Map<Integer, Long> lastEntityDamage;
     protected long lastDamage;
-    protected long damageInterval;
+    protected long damageGracePeriod;
 
-    protected EntityLiving(EntityType type, Level level, Vector2f pos, float size) {
-        super(type, level, pos, size);
+    protected EntityLiving(EntityType type, Level level, Vector2f pos, boolean throttle, float size) {
+        super(type, level, pos, throttle, size);
         this.maxHealth = 20;
         this.health = maxHealth;
         this.naturalRegeneration = 1;
+        this.invulnerable = false;
 
         this.combat = false;
-        this.alwaysInCombat = false;
+        this.stayInCombat = false;
+        this.lastCombatEntry = -1L;
         this.outOfCombatTicks = CoreParameters.TICK_RATE * 5;
 
         this.lastDamageSource = null;
-        this.lastDamage = -1;
-        this.damageInterval = (long) (0.5f * CoreParameters.TICK_RATE);
+        this.lastEntityDamage = new HashMap<>();
+        this.lastDamage = -1L;
+        this.damageGracePeriod = (long) (INVULNERABLE_SECONDS_AFTER_DAMAGE * CoreParameters.TICK_RATE);
     }
 
     public boolean isDead() {
@@ -47,18 +57,32 @@ public class EntityLiving extends EntitySentient implements Damageable {
         this.health = Math.min(health + rawHealth, maxHealth);
     }
 
-    public boolean isInCombat() {
-        return combat || alwaysInCombat;
+    public boolean isInvulnerable() {
+        return invulnerable;
     }
 
-    public void setInCombat(boolean combat) {
-        this.combat = combat;
-        if (combat) {
+    public final boolean isInCombat() {
+        return combat;
+    }
+
+    public final void setInCombat(boolean c) {
+        this.setInCombat(c, stayInCombat);
+    }
+
+    public final void setInCombat(boolean c, boolean stay) {
+        this.combat = c;
+        this.setStayInCombat(stay);
+
+        if (c) {
             this.lastCombatEntry = CoreParameters.totalTicks;
         }
     }
 
-    public long getInCombatTicks() {
+    public final void setStayInCombat(boolean stayInCombat) {
+        this.stayInCombat = stayInCombat;
+    }
+
+    public final long getInCombatTicks() {
         if (this.isInCombat()) {
             return CoreParameters.totalTicks - lastCombatEntry;
         } else {
@@ -66,18 +90,13 @@ public class EntityLiving extends EntitySentient implements Damageable {
         }
     }
 
-    public boolean isAlwaysInCombat() {
-        return alwaysInCombat;
-    }
-
-    public void setAlwaysInCombat(boolean alwaysInCombat) {
-        if (alwaysInCombat) this.lastCombatEntry = CoreParameters.totalTicks;
-        this.alwaysInCombat = alwaysInCombat;
+    public final boolean staysInCombat() {
+        return stayInCombat;
     }
 
     @Override
-    public void shoot(Class<? extends EntityProjectile> clazz, Vector2f direction, float speed) {
-        super.shoot(clazz, direction, speed);
+    public void shoot(Class<? extends EntityProjectile> clazz, Vector2f direction) {
+        super.shoot(clazz, direction);
         this.setInCombat(true);
     }
 
@@ -86,31 +105,49 @@ public class EntityLiving extends EntitySentient implements Damageable {
         super.syncTick(delta);
 
         long totalTicks = CoreParameters.totalTicks;
-        if (this.isInCombat() && totalTicks - lastCombatEntry >= outOfCombatTicks) {
-            this.setInCombat(false);
-        }
+        if (this.isInCombat()) {
+            this.idleTicks = 0L;
 
-        if (!this.isInCombat() && totalTicks % CoreParameters.TICK_RATE == 0) {
-            this.heal(naturalRegeneration);
+            if (!stayInCombat && (totalTicks - lastCombatEntry >= outOfCombatTicks)) {
+                this.setInCombat(false);
+            }
+        } else {
+            if (totalTicks % CoreParameters.TICK_RATE == 0) {
+                this.heal(naturalRegeneration);
+            }
         }
     }
 
     @Override
-    public int damage(DamageSource source, int rawDamage) {
-        if (CoreParameters.totalTicks - lastDamage < damageInterval) return 0;
+    public int damage(DamageSource s, int rawDamage) {
+        if (this.isInvulnerable()) return 0;
+
+        long last = (s instanceof Entity) ? lastEntityDamage.getOrDefault(((Entity) s).entityId, -1L) : lastDamage;
+        if (CoreParameters.totalTicks - last < damageGracePeriod) return 0;
 
         int damage = Math.min(health, rawDamage);
         this.health -= damage;
         this.setInCombat(damage > 0);
 
+        if (s instanceof Entity) {
+            lastEntityDamage.put(((Entity) s).entityId, CoreParameters.totalTicks);
+        }
         this.lastDamage = CoreParameters.totalTicks;
-        this.lastDamageSource = source;
+        this.lastDamageSource = s;
 
         return damage;
     }
 
     @Override
     public boolean wasDamagedSince(float seconds) {
-        return lastDamage > 0 && (CoreParameters.totalTicks - lastDamage) <= seconds * CoreParameters.TICK_RATE;
+        if (lastDamage < 0) return false;
+        return CoreParameters.totalTicks - lastDamage <= seconds * CoreParameters.TICK_RATE;
+    }
+
+    @Override
+    public boolean wasDamagedSince(DamageSource source, float seconds) {
+        long last = lastEntityDamage.getOrDefault((source instanceof Entity) ? ((Entity) source).entityId : -1, -1L);
+        if (last < 0) return false;
+        return CoreParameters.totalTicks - last <= seconds * CoreParameters.TICK_RATE;
     }
 }

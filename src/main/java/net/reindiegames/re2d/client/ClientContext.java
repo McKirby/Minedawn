@@ -115,7 +115,7 @@ public class ClientContext extends GameContext {
 
         Log.info("Loading Level...");
         int scale = 3;
-        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(1699408110L, 10 * scale, 10 * scale, scale));
+        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
         player = currentLevel.spawn(EntityClientPlayer.class, currentLevel.getSpawn());
     }
 
@@ -154,6 +154,11 @@ public class ClientContext extends GameContext {
     @Override
     protected boolean shouldClose() {
         return GLFW.glfwWindowShouldClose(window);
+    }
+
+    @Override
+    public void stop() {
+        GLFW.glfwSetWindowShouldClose(window, true);
     }
 
     @Override

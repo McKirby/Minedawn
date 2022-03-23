@@ -14,8 +14,7 @@ public class EntityMoveToTargetGoal<E extends Entity> extends EntityTargetGoal<E
     @Override
     public void execute(long totalTicks) {
         super.execute(totalTicks);
-        entity.setMaxSpeed(entity.getBaseMaxSpeed() * speedFactor);
-        ((EntityLiving) entity).setAlwaysInCombat(true);
+        ((EntityLiving) entity).setInCombat(true, true);
     }
 
     @Override
@@ -40,8 +39,7 @@ public class EntityMoveToTargetGoal<E extends Entity> extends EntityTargetGoal<E
     @Override
     public void yield(long totalTicks) {
         super.yield(totalTicks);
-        entity.resetMaxSpeed();
-        ((EntityLiving) entity).setAlwaysInCombat(false);
+        ((EntityLiving) entity).setStayInCombat(false);
     }
 
     @Override
