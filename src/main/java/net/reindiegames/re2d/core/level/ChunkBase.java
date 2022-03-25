@@ -10,13 +10,16 @@ import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
-import org.jbox2d.dynamics.joints.JointDef;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
+import static net.reindiegames.re2d.core.level.Chunk.CHUNK_LAYERS;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 public class ChunkBase implements Tickable {
@@ -101,8 +104,8 @@ public class ChunkBase implements Tickable {
             if (generate) {
                 chunk = new Chunk(level, cx, cy);
 
-                final int[][] tiles = new int[CHUNK_SIZE][CHUNK_SIZE];
-                final short[][] variants = new short[CHUNK_SIZE][CHUNK_SIZE];
+                final int[][][] tiles = new int[CHUNK_SIZE][CHUNK_SIZE][CHUNK_LAYERS];
+                final short[][][] variants = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_LAYERS];
                 level.populate(chunk, tiles, variants);
 
                 Vector2f levelPos;
@@ -113,13 +116,15 @@ public class ChunkBase implements Tickable {
                     for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                         levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
                         tilePos = CoordinateSystems.levelToLevelTile(levelPos);
-                        if (tiles[rx][ry] <= 0) continue;
 
-                        type = TileType.getById(tiles[rx][ry]);
-                        tile = type.newInstance(level, chunk, tilePos.x, tilePos.y);
-                        tile.variant = variants[rx][ry];
+                        for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
+                            if (tiles[rx][ry][layer] <= 0) continue;
 
-                        chunk.tiles[rx][ry] = tile;
+                            type = TileType.getById(tiles[rx][ry][layer]);
+                            tile = type.newInstance(level, chunk, tilePos.x, tilePos.y);
+                            tile.variant = variants[rx][ry][layer];
+                            chunk.tiles[rx][ry][layer] = tile;
+                        }
                     }
                 }
 

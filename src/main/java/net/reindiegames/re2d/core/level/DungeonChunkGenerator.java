@@ -315,7 +315,7 @@ public class DungeonChunkGenerator implements ChunkGenerator {
     }
 
     @Override
-    public void populate(Chunk chunk, int[][] tiles, short[][] variants) {
+    public void populate(Chunk chunk, int[][][] tiles, short[][][] variants) {
         Vector2f levelPos;
         int tx, ty, x, y;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
@@ -342,8 +342,8 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                     }
                 }
 
-                tiles[rx][ry] = type.id;
-                variants[rx][ry] = variant;
+                tiles[rx][ry][Chunk.TERRAIN_LAYER_1] = type.id;
+                variants[rx][ry][Chunk.TERRAIN_LAYER_1] = variant;
             }
         }
     }

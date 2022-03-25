@@ -101,7 +101,6 @@ public abstract class Entity extends ACollidable {
 
         this.getLevel().getChunkBase().getPhysics().raycast((fixture, hit, normal, ratio) -> {
             ICollidable hitObject = (ICollidable) fixture.m_userData;
-
             if (invisibleEntities && hitObject instanceof Entity) {
                 return 1.0f;
             }

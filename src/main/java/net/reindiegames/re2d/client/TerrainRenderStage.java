@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.Level;
 
 import java.util.HashMap;
@@ -17,7 +18,8 @@ class TerrainRenderStage extends LevelRenderStage<TerrainShader, Level> {
     @Override
     protected void process(Level level) {
         shader.loadTextureBank(0);
-        shader.loadDepth(0.0f);
+        shader.loadDepth(Chunk.LIQUID_LAYER);
+
         level.getChunkBase().forEachLoadedChunk((chunk -> {
             Map<Integer, Mesh[]> xMap = CHUNK_MESH_MAP.computeIfAbsent(chunk.cx, key -> new HashMap<>());
             Mesh[] meshes = xMap.getOrDefault(chunk.cy, null);

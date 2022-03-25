@@ -1,5 +1,6 @@
 package net.reindiegames.re2d.client;
 
+import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.entity.EntityLiving;
 import org.joml.Vector2f;
@@ -19,7 +20,8 @@ public class EntityRenderStage extends LevelRenderStage<EntityShader, Level> {
     @Override
     protected void process(Level level) {
         shader.loadTextureBank(0);
-        shader.loadDepth(1.0f);
+        shader.loadDepth(Chunk.ENTITY_LAYER);
+
         level.getChunkBase().forEachEntity(entity -> {
             RenderCompound compound = ClientCoreBridge.ENTITY_COMPOUND_MAP.get(entity.type.id);
 

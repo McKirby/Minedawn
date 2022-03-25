@@ -12,10 +12,10 @@ import java.util.Set;
 
 class Mesh {
     protected static final float[] SPRITE_VERTICES = {
-            0.0f, 1.0f,
-            1.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f,
+            0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f,
+            1.0f, 0.0f, 0.0f,
     };
     protected static final int[] SPRITE_TRIANGLE_INDICES = {
             0, 2, 1,
@@ -57,7 +57,7 @@ class Mesh {
         GL30.glEnableVertexAttribArray(0);
         GL30.glEnableVertexAttribArray(1);
 
-        this.vertexVbo = this.storeAsAttribute(0, v, 2);
+        this.vertexVbo = this.storeAsAttribute(0, v, 3);
         this.textureCoordinateVbo = this.storeAsAttribute(1, t, 2);
         this.triangleIndicesVbo = this.storeAsIndices(triangleIndices);
         this.lineIndicesVbo = this.storeAsIndices(lineIndices);

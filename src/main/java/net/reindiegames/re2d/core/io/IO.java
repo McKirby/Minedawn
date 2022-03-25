@@ -33,18 +33,18 @@ public interface IO {
         }
     }
 
-    public static boolean writeToFile(String value, String folder, String file) throws IOException {
-        final File fo = new File(folder);
-        if (!fo.exists() && !fo.mkdirs()) {
-            throw new IOException("Can not create Folder '" + folder + "'!");
+    public static boolean writeToFile(String value, String folderName, String fileName) throws IOException {
+        final File folder = new File(folderName);
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new IOException("Can not create Folder '" + folderName + "'!");
         }
 
-        final File fi = new File(fo, file);
-        if (!fi.exists() && !fi.createNewFile()) {
-            throw new IOException("Can not write to File '" + file + "' in '" + folder + "'!");
+        final File file = new File(folder, fileName);
+        if (!file.exists() && !file.createNewFile()) {
+            throw new IOException("Can not write to File '" + fileName + "' in '" + folderName + "'!");
         }
 
-        final BufferedWriter writer = new BufferedWriter(new FileWriter(fi));
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         writer.write(value);
         writer.flush();
         writer.close();

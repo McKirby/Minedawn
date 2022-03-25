@@ -18,13 +18,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static net.reindiegames.re2d.client.Mesh.*;
+import static net.reindiegames.re2d.core.level.Chunk.CHUNK_LAYERS;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 class ClientCoreBridge {
     protected static final Map<Integer, RenderCompound> TILE_COMPOUND_MAP = new HashMap<>();
     protected static final Map<Integer, RenderCompound> ENTITY_COMPOUND_MAP = new HashMap<>();
 
-    protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE;
+    protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_LAYERS;
     protected static final FloatBuffer vertexBuffer;
     protected static final FloatBuffer textureBuffer;
     protected static final IntBuffer triangleBuffer;
@@ -32,8 +33,8 @@ class ClientCoreBridge {
     protected static final Map<Integer, Map<Integer, Mesh[]>> CHUNK_MESH_MAP = new HashMap<>();
 
     static {
-        vertexBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
-        textureBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * SPRITE_VERTICES.length);
+        vertexBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * 4 * 3);
+        textureBuffer = MemoryUtil.memAllocFloat(TILES_PER_CHUNK * 4 * 2);
         triangleBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_TRIANGLE_INDICES.length);
         lineBuffer = MemoryUtil.memAllocInt(TILES_PER_CHUNK * SPRITE_LINE_INDICES.length);
     }
@@ -134,12 +135,14 @@ class ClientCoreBridge {
         Tile tile;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                tile = c.tiles[rx][ry];
-                if (tile == null) continue;
+                for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
+                    tile = c.tiles[rx][ry][layer];
+                    if (tile == null) continue;
 
-                animationDuration = TILE_COMPOUND_MAP.get(tile.type.id).animation[tile.variant].duration;
-                if (animationDuration > maxAnimationDuration) {
-                    maxAnimationDuration = animationDuration;
+                    animationDuration = TILE_COMPOUND_MAP.get(tile.type.id).animation[tile.variant].duration;
+                    if (animationDuration > maxAnimationDuration) {
+                        maxAnimationDuration = animationDuration;
+                    }
                 }
             }
         }
@@ -169,27 +172,29 @@ class ClientCoreBridge {
         Mesh tileMesh;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                tile = chunk.tiles[rx][ry];
-                if (tile == null) continue;
+                for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
+                    tile = chunk.tiles[rx][ry][layer];
+                    if (tile == null) continue;
 
-                compound = TILE_COMPOUND_MAP.get(tile.type.id);
-                p = compound.animation[tile.variant];
-                tileMesh = compound.sprites[tile.variant][(tick / p.ticks) % p.frames];
+                    compound = TILE_COMPOUND_MAP.get(tile.type.id);
+                    p = compound.animation[tile.variant];
+                    tileMesh = compound.sprites[tile.variant][(tick / p.ticks) % p.frames];
+                    for (int i = 0; i < tileMesh.vertices.length; i += 3) {
+                        vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
+                        vertexBuffer.put((tileMesh.vertices[i + 1] + ry) / CHUNK_SIZE);
+                        vertexBuffer.put((tileMesh.vertices[i + 2] + layer) / CHUNK_SIZE);
+                    }
+                    textureBuffer.put(tileMesh.textureCoordinates);
 
-                for (int i = 0; i < tileMesh.vertices.length; i += 2) {
-                    vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
-                    vertexBuffer.put((tileMesh.vertices[i + 1] + ry) / CHUNK_SIZE);
+                    for (int i = 0; i < tileMesh.triangleIndices.length; i++) {
+                        triangleBuffer.put(tileMesh.triangleIndices[i] + offset);
+                    }
+
+                    for (int i = 0; i < tileMesh.lineIndices.length; i++) {
+                        lineBuffer.put(tileMesh.lineIndices[i] + offset);
+                    }
+                    offset += 4;
                 }
-                textureBuffer.put(tileMesh.textureCoordinates);
-
-                for (int i = 0; i < tileMesh.triangleIndices.length; i++) {
-                    triangleBuffer.put(tileMesh.triangleIndices[i] + offset);
-                }
-
-                for (int i = 0; i < tileMesh.lineIndices.length; i++) {
-                    lineBuffer.put(tileMesh.lineIndices[i] + offset);
-                }
-                offset += 4;
             }
         }
 

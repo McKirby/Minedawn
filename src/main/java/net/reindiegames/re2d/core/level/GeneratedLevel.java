@@ -24,7 +24,7 @@ public class GeneratedLevel implements Level {
     }
 
     @Override
-    public void populate(Chunk chunk, int[][] tiles, short[][] variants) {
+    public void populate(Chunk chunk, int[][][] tiles, short[][][] variants) {
         chunkGenerator.populate(chunk, tiles, variants);
     }
 

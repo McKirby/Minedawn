@@ -18,7 +18,7 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
     public void touch(ICollidable object, boolean collision) {
         if (collision) {
             if (object instanceof Damageable) {
-                ((Damageable) object).damage(this, 2);
+                ((Damageable) object).damage(this);
             }
             this.die();
         }
@@ -44,5 +44,10 @@ public class EntityProjectile extends EntityInsentient implements DamageSource {
         if (this.getTicksLived() > maxExistingTime) {
             this.die();
         }
+    }
+
+    @Override
+    public int getRawDamage(Damageable target) {
+        return 5;
     }
 }

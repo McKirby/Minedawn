@@ -4,8 +4,6 @@ import net.reindiegames.re2d.core.CoreParameters;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.Tickable;
 import net.reindiegames.re2d.core.level.entity.Entity;
-import net.reindiegames.re2d.core.level.entity.EntitySentient;
-import org.joml.Random;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -28,11 +26,11 @@ public interface Level extends ChunkPopulator, Tickable {
         return this.getChunkBase().getChunk(chunkPos.x, chunkPos.y, generate, load);
     }
 
-    public default Tile getTile(Vector2i tilePos) {
-        return this.getTile(CoordinateSystems.levelTileToLevel(tilePos));
+    public default Tile[] getTiles(Vector2i tilePos) {
+        return this.getTiles(CoordinateSystems.levelTileToLevel(tilePos));
     }
 
-    public default Tile getTile(Vector2f levelPos) {
+    public default Tile[] getTiles(Vector2f levelPos) {
         final Chunk chunk = this.getChunk(levelPos, false, false);
         if (chunk == null) return null;
 
@@ -40,19 +38,11 @@ public interface Level extends ChunkPopulator, Tickable {
         return chunk.tiles[relative.x][relative.y];
     }
 
-    public default void setTileType(Vector2f levelPos, TileType type) {
-        this.setTileType(CoordinateSystems.levelToLevelTile(levelPos), type, type.defaultVariant);
+    public default void setTileType(Vector2i tilePos, byte targetLayer, boolean clear, TileType type) {
+        this.setTileType(tilePos, targetLayer, clear, type, type.defaultVariant);
     }
 
-    public default void setTileType(Vector2f levelPos, TileType type, short variant) {
-        this.setTileType(CoordinateSystems.levelToLevelTile(levelPos), type, variant);
-    }
-
-    public default void setTileType(Vector2i tilePos, TileType type) {
-        this.setTileType(tilePos, type, type.defaultVariant);
-    }
-
-    public default void setTileType(Vector2i tilePos, TileType type, short variant) {
+    public default void setTileType(Vector2i tilePos, byte targetLayer, boolean clear, TileType type, short variant) {
         final Chunk chunk = this.getChunk(tilePos, false, false);
         if (chunk == null) return;
 
@@ -60,12 +50,17 @@ public interface Level extends ChunkPopulator, Tickable {
         final Tile newTile = type.newInstance(this, chunk, tilePos.x, tilePos.y);
         newTile.variant = variant;
 
-        final Tile oldTile = chunk.tiles[relative.x][relative.y];
-        if (oldTile != null) {
-            oldTile.destroy();
+        for (byte layer = 0; layer < Chunk.CHUNK_LAYERS; layer++) {
+            if (layer == targetLayer || clear) {
+                final Tile oldTile = chunk.tiles[relative.x][relative.y][layer];
+                if (oldTile != null) {
+                    oldTile.destroy();
+                    chunk.tiles[relative.x][relative.y][layer] = null;
+                }
+            }
         }
 
-        chunk.tiles[relative.x][relative.y] = newTile;
+        chunk.tiles[relative.x][relative.y][targetLayer] = newTile;
         chunk.changed = true;
     }
 

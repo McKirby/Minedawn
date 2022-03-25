@@ -2,14 +2,11 @@ package net.reindiegames.re2d.client;
 
 import net.reindiegames.re2d.core.GameContext;
 import net.reindiegames.re2d.core.Log;
-import net.reindiegames.re2d.core.level.DungeonChunkGenerator;
-import net.reindiegames.re2d.core.level.GeneratedLevel;
-import net.reindiegames.re2d.core.level.Level;
-import net.reindiegames.re2d.core.level.TileType;
-import net.reindiegames.re2d.core.level.entity.EntityZombie;
+import net.reindiegames.re2d.core.level.*;
 import net.reindiegames.re2d.core.util.Disposer;
 import net.reindiegames.re2d.core.util.Initializer;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -88,13 +85,14 @@ public class ClientContext extends GameContext {
         Input.addMouseAction(((button, pressed, x, y) -> {
             if (!pressed) return;
             final Vector2f goal = Input.getCursorLevelPosition();
+            final Vector2i tileGoal = CoordinateSystems.levelToLevelTile(goal);
 
             switch (button) {
                 case GLFW.GLFW_MOUSE_BUTTON_1 -> {
-                    player.level.spawn(EntityZombie.class, goal);
+                    player.level.setTileType(tileGoal, Chunk.ENTITY_LAYER, false, TileType.WATER);
                 }
                 case GLFW.GLFW_MOUSE_BUTTON_2 -> {
-                    player.level.setTileType(goal, TileType.STONE_WALL);
+                    player.level.setTileType(tileGoal, Chunk.TERRAIN_LAYER_1, false, TileType.GRASS);
                 }
                 case GLFW.GLFW_MOUSE_BUTTON_3 -> {
                     player.navigator.navigate(goal);
@@ -114,8 +112,7 @@ public class ClientContext extends GameContext {
         if (!ClientCoreBridge.bridge()) throw new IllegalStateException("Could not Bridge between Core and Client!");
 
         Log.info("Loading Level...");
-        int scale = 3;
-        currentLevel = new GeneratedLevel(1337, new DungeonChunkGenerator(10 * scale, 10 * scale, scale));
+        currentLevel = new GeneratedLevel(1337, new WildernessChunkGenerator());
         player = currentLevel.spawn(EntityClientPlayer.class, currentLevel.getSpawn());
     }
 
