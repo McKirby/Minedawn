@@ -73,8 +73,8 @@ public class ResourceLevel extends GameResource implements Level {
     public void populate(Chunk chunk, int[][][] tiles, short[][][] variants) {
         for (int rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
             for (int ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
-                tiles[rx][ry][Chunk.TERRAIN_LAYER_1] = TileType.GRASS.id;
-                variants[rx][ry][Chunk.TERRAIN_LAYER_1] = TileType.GRASS.defaultVariant;
+                tiles[rx][ry][TileStack.TERRAIN_LAYER_1] = TileType.GRASS.id;
+                variants[rx][ry][TileStack.TERRAIN_LAYER_1] = TileType.GRASS.defaultVariant;
             }
         }
     }

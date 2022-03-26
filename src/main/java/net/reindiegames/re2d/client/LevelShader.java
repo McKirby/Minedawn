@@ -1,6 +1,6 @@
 package net.reindiegames.re2d.client;
 
-import net.reindiegames.re2d.core.level.Chunk;
+import net.reindiegames.re2d.core.level.TileStack;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 
@@ -36,7 +36,7 @@ abstract class LevelShader extends Shader {
 
     protected void loadProjectionView(Vector2f c, float width, float height) {
         final Matrix4f projection = new Matrix4f();
-        projection.ortho(0.0f, width, 0.0f, height, -1.0f - Chunk.CHUNK_LAYERS, 1.0f);
+        projection.ortho(0.0f, width, 0.0f, height, -1.0f - TileStack.LAYERS, 1.0f);
         super.loadMatrix4f(projectionLocation, projection);
 
         final Matrix4f view = new Matrix4f();

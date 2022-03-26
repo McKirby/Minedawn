@@ -26,16 +26,16 @@ public interface Level extends ChunkPopulator, Tickable {
         return this.getChunkBase().getChunk(chunkPos.x, chunkPos.y, generate, load);
     }
 
-    public default Tile[] getTiles(Vector2i tilePos) {
-        return this.getTiles(CoordinateSystems.levelTileToLevel(tilePos));
+    public default TileStack getTileStack(Vector2i tilePos) {
+        return this.getTileStack(CoordinateSystems.levelTileToLevel(tilePos));
     }
 
-    public default Tile[] getTiles(Vector2f levelPos) {
+    public default TileStack getTileStack(Vector2f levelPos) {
         final Chunk chunk = this.getChunk(levelPos, false, false);
         if (chunk == null) return null;
 
         final Vector2i relative = CoordinateSystems.levelToChunkRelative(levelPos);
-        return chunk.tiles[relative.x][relative.y];
+        return chunk.stacks[relative.x][relative.y];
     }
 
     public default void setTileType(Vector2i tilePos, byte targetLayer, boolean clear, TileType type) {
@@ -47,20 +47,9 @@ public interface Level extends ChunkPopulator, Tickable {
         if (chunk == null) return;
 
         final Vector2i relative = CoordinateSystems.levelToChunkRelative(tilePos);
-        final Tile newTile = type.newInstance(this, chunk, tilePos.x, tilePos.y);
-        newTile.variant = variant;
-
-        for (byte layer = 0; layer < Chunk.CHUNK_LAYERS; layer++) {
-            if (layer == targetLayer || clear) {
-                final Tile oldTile = chunk.tiles[relative.x][relative.y][layer];
-                if (oldTile != null) {
-                    oldTile.destroy();
-                    chunk.tiles[relative.x][relative.y][layer] = null;
-                }
-            }
-        }
-
-        chunk.tiles[relative.x][relative.y][targetLayer] = newTile;
+        final TileStack stack = chunk.stacks[relative.x][relative.y];
+        if(clear) stack.clear();
+        stack.setTileType(targetLayer, type, variant);
         chunk.changed = true;
     }
 

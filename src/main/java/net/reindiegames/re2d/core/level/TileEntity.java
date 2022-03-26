@@ -5,10 +5,10 @@ import net.reindiegames.re2d.core.Tickable;
 public class TileEntity extends Tile implements Tickable {
     public final int tileEntityId;
 
-    protected TileEntity(Level level, Chunk chunk, int tx, int ty, TileType type) {
-        super(level, chunk, tx, ty, type);
-        this.tileEntityId = level.getChunkBase().nextTileEntityId();
-        level.getChunkBase().addTileEntity(this);
+    protected TileEntity(TileStack stack, byte layer, TileType type) {
+        super(stack, layer, type);
+        this.tileEntityId = stack.level.getChunkBase().nextTileEntityId();
+        stack.level.getChunkBase().addTileEntity(this);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class TileEntity extends Tile implements Tickable {
     @Override
     public void destroy() {
         super.destroy();
-        level.getChunkBase().removeTileEntity(this);
+        stack.level.getChunkBase().removeTileEntity(this);
     }
 
     @Override

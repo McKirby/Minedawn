@@ -19,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static net.reindiegames.re2d.core.level.Chunk.CHUNK_LAYERS;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
+import static net.reindiegames.re2d.core.level.TileStack.LAYERS;
 
 public class ChunkBase implements Tickable {
     public final Level level;
@@ -104,27 +104,31 @@ public class ChunkBase implements Tickable {
             if (generate) {
                 chunk = new Chunk(level, cx, cy);
 
-                final int[][][] tiles = new int[CHUNK_SIZE][CHUNK_SIZE][CHUNK_LAYERS];
-                final short[][][] variants = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_LAYERS];
+                final int[][][] tiles = new int[CHUNK_SIZE][CHUNK_SIZE][LAYERS];
+                final short[][][] variants = new short[CHUNK_SIZE][CHUNK_SIZE][LAYERS];
                 level.populate(chunk, tiles, variants);
 
                 Vector2f levelPos;
                 Vector2i tilePos;
+                TileStack stack;
                 TileType type;
+                short variant;
                 Tile tile;
                 for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
                     for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
                         levelPos = CoordinateSystems.chunkRelativeToLevel(chunk.cx, chunk.cy, rx, ry);
                         tilePos = CoordinateSystems.levelToLevelTile(levelPos);
+                        stack = new TileStack(level, chunk, tilePos.x, tilePos.y);
 
-                        for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
+                        for (byte layer = 0; layer < LAYERS; layer++) {
                             if (tiles[rx][ry][layer] <= 0) continue;
 
                             type = TileType.getById(tiles[rx][ry][layer]);
-                            tile = type.newInstance(level, chunk, tilePos.x, tilePos.y);
-                            tile.variant = variants[rx][ry][layer];
-                            chunk.tiles[rx][ry][layer] = tile;
+                            variant = variants[rx][ry][layer];
+                            stack.setTileType(layer, type, variant);
+
                         }
+                        chunk.stacks[rx][ry] = stack;
                     }
                 }
 

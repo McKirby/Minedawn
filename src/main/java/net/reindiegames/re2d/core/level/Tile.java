@@ -1,34 +1,29 @@
 package net.reindiegames.re2d.core.level;
 
 import net.reindiegames.re2d.core.level.entity.Entity;
-import net.reindiegames.re2d.core.level.entity.EntitySentient;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyType;
 import org.joml.Vector2i;
 
 public class Tile implements ICollidable {
-    public final Level level;
-    public final Chunk chunk;
 
-    public final int tx;
-    public final int ty;
+    public final TileStack stack;
+    public final byte layer;
+
     public final TileType type;
-
     public short variant;
 
     private final Body body;
 
-    protected Tile(Level level, Chunk chunk, int tx, int ty, TileType type) {
-        this.level = level;
-        this.chunk = chunk;
+    protected Tile(TileStack stack, byte layer, TileType type) {
+        this.stack = stack;
+        this.layer = layer;
 
-        this.tx = tx;
-        this.ty = ty;
         this.type = type;
         this.variant = type.defaultVariant;
 
-        this.body = level.getChunkBase().createBody(this, BodyType.STATIC, tx, ty);
-        level.getChunkBase().createBoundingBox(this, body, 1.0f, 1.0f, 0.0f);
+        this.body = stack.level.getChunkBase().createBody(this, BodyType.STATIC, stack.tx, stack.ty);
+        stack.level.getChunkBase().createBoundingBox(this, body, 1.0f, 1.0f, 0.0f);
     }
 
     public void destroy() {
@@ -37,7 +32,7 @@ public class Tile implements ICollidable {
 
     @Override
     public Level getLevel() {
-        return level;
+        return stack.level;
     }
 
     @Override
@@ -60,9 +55,5 @@ public class Tile implements ICollidable {
 
     @Override
     public void collision(ICollidable object) {
-    }
-
-    public Vector2i getTilePosition() {
-        return new Vector2i(tx, ty);
     }
 }

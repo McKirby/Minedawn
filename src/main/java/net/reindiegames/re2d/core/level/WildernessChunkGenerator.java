@@ -23,8 +23,8 @@ public class WildernessChunkGenerator implements ChunkGenerator {
     public void populate(Chunk chunk, int[][][] tiles, short[][][] variants) {
         for (byte rx = 0; rx < Chunk.CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < Chunk.CHUNK_SIZE; ry++) {
-                tiles[rx][ry][Chunk.TERRAIN_LAYER_1] = TileType.GRASS.id;
-                variants[rx][ry][Chunk.TERRAIN_LAYER_1] = 14;
+                tiles[rx][ry][TileStack.TERRAIN_LAYER_1] = TileType.GRASS.id;
+                variants[rx][ry][TileStack.TERRAIN_LAYER_1] = 14;
             }
         }
     }

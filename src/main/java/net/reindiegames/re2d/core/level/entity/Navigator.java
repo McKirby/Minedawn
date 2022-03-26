@@ -1,8 +1,7 @@
 package net.reindiegames.re2d.core.level.entity;
 
-import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.Level;
-import net.reindiegames.re2d.core.level.Tile;
+import net.reindiegames.re2d.core.level.TileStack;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 
@@ -106,10 +105,8 @@ public class Navigator {
     }
 
     private Node getNode(Level level, int x, int y) {
-        final Tile[] tile = level.getTiles(new Vector2f(x, y));
-        for (byte layer = 0; layer < Chunk.CHUNK_LAYERS; layer++) {
-            if (tile[layer] == null || tile[layer].type.isSolid()) return null;
-        }
+        final TileStack stack = level.getTileStack(new Vector2f(x, y));
+        if (stack.isSolid()) return null;
 
         Map<Integer, Node> xMap = nodeMap.computeIfAbsent(x, key -> new HashMap<>());
         return xMap.computeIfAbsent(y, key -> new Node(x, y));

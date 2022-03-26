@@ -85,12 +85,12 @@ public class TileType extends GameResource {
         return solid;
     }
 
-    public Tile newInstance(Level level, Chunk chunk, int tx, int ty) {
+    public Tile newInstance(TileStack stack, byte layer) {
         if (constructor == null) {
-            return new Tile(level, chunk, tx, ty, this);
+            return new Tile(stack, layer, this);
         } else {
             try {
-                return (Tile) constructor.newInstance(level, chunk, tx, ty);
+                return (Tile) constructor.newInstance(stack, layer, this);
             } catch (ReflectiveOperationException e) {
                 Log.debug("Can not create Tile with Type '" + this.name + "'! Is the Implementation corrupt?!");
                 e.printStackTrace();
@@ -110,7 +110,7 @@ public class TileType extends GameResource {
         if (core.has("implementation")) {
             try {
                 Class clazz = Class.forName(TILE_IMPL_PREFIX + core.get("implementation").getAsString());
-                this.constructor = clazz.getDeclaredConstructor(Level.class, Chunk.class, Integer.class, Integer.class);
+                this.constructor = clazz.getDeclaredConstructor(TileStack.class, Byte.class);
                 constructor.setAccessible(true);
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();

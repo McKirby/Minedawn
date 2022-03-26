@@ -8,6 +8,7 @@ import net.reindiegames.re2d.core.GameResource;
 import net.reindiegames.re2d.core.Log;
 import net.reindiegames.re2d.core.level.Chunk;
 import net.reindiegames.re2d.core.level.Tile;
+import net.reindiegames.re2d.core.level.TileStack;
 import net.reindiegames.re2d.core.level.TileType;
 import net.reindiegames.re2d.core.level.entity.EntityType;
 import org.lwjgl.system.MemoryUtil;
@@ -17,15 +18,16 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.reindiegames.re2d.client.Mesh.*;
-import static net.reindiegames.re2d.core.level.Chunk.CHUNK_LAYERS;
+import static net.reindiegames.re2d.client.Mesh.SPRITE_LINE_INDICES;
+import static net.reindiegames.re2d.client.Mesh.SPRITE_TRIANGLE_INDICES;
+import static net.reindiegames.re2d.core.level.TileStack.LAYERS;
 import static net.reindiegames.re2d.core.level.Chunk.CHUNK_SIZE;
 
 class ClientCoreBridge {
     protected static final Map<Integer, RenderCompound> TILE_COMPOUND_MAP = new HashMap<>();
     protected static final Map<Integer, RenderCompound> ENTITY_COMPOUND_MAP = new HashMap<>();
 
-    protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_LAYERS;
+    protected static final int TILES_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * LAYERS;
     protected static final FloatBuffer vertexBuffer;
     protected static final FloatBuffer textureBuffer;
     protected static final IntBuffer triangleBuffer;
@@ -68,12 +70,11 @@ class ClientCoreBridge {
                 animationTicks = 1;
 
                 spriteIndex = element.getAsInt();
-
                 column = spriteIndex % compound.atlas.columns;
-                row = spriteIndex / compound.atlas.columns;
+                row = spriteIndex / compound.atlas.rows;
                 texCoords = compound.atlas.getTextureCoords(column, row);
 
-                compound.sprites[variant][0] = Mesh.create(prefix + resource.name + "_0", texCoords);
+                compound.sprites[variant][0] = Mesh.create(prefix + "_" + resource.name + "_0", texCoords);
             } else {
                 final JsonArray subSpriteArray = spriteArray.get(variant).getAsJsonArray();
                 compound.sprites[variant] = new Mesh[subSpriteArray.size() - 1];
@@ -88,12 +89,11 @@ class ClientCoreBridge {
                     row = spriteIndex / compound.atlas.columns;
                     texCoords = compound.atlas.getTextureCoords(column, row);
 
-                    compound.sprites[variant][i - 1] = Mesh.create(resource + resource.name + "_" + i, texCoords);
+                    compound.sprites[variant][i - 1] = Mesh.create(resource + "_" + resource.name + "_" + i, texCoords);
                 }
             }
             compound.animation[variant] = new RenderCompound.AnimationParameters(animationFrames, animationTicks);
         }
-
         target.put(resource.id, compound);
     }
 
@@ -119,7 +119,7 @@ class ClientCoreBridge {
                 final JsonObject clientObject = type.loadResourceObject().get("client").getAsJsonObject();
                 ClientCoreBridge.loadCompound(type, clientObject, "entity_", ENTITY_COMPOUND_MAP);
             } catch (IllegalArgumentException e) {
-                Log.error("Could not bridge to Tile '" + type.name + "'(" + e.getMessage() + ")!");
+                Log.error("Could not bridge to Entity '" + type.name + "'(" + e.getMessage() + ")!");
                 return false;
             }
         }
@@ -127,16 +127,18 @@ class ClientCoreBridge {
         return true;
     }
 
-    protected synchronized static Mesh[] generateTerrainMesh(Chunk c) {
+    protected synchronized static Mesh[] generateTerrainMesh(Chunk chunk) {
         final long start = System.currentTimeMillis();
         int maxAnimationDuration = 1;
         int animationDuration;
 
+        TileStack stack;
         Tile tile;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
-                    tile = c.tiles[rx][ry][layer];
+                stack = chunk.stacks[rx][ry];
+                for (byte layer = 0; layer < LAYERS; layer++) {
+                    tile = stack.tiles[layer];
                     if (tile == null) continue;
 
                     animationDuration = TILE_COMPOUND_MAP.get(tile.type.id).animation[tile.variant].duration;
@@ -149,7 +151,7 @@ class ClientCoreBridge {
 
         final Mesh[] meshes = new Mesh[maxAnimationDuration];
         for (int i = 0; i < meshes.length; i++) {
-            meshes[i] = ClientCoreBridge.generateTickTerrainMesh(i, c);
+            meshes[i] = ClientCoreBridge.generateTickTerrainMesh(i, chunk);
         }
 
         long delta = System.currentTimeMillis() - start;
@@ -167,18 +169,22 @@ class ClientCoreBridge {
         int offset = 0;
 
         RenderCompound compound;
+        TileStack stack;
         Tile tile;
-        RenderCompound.AnimationParameters p;
+        RenderCompound.AnimationParameters params;
         Mesh tileMesh;
         for (byte rx = 0; rx < CHUNK_SIZE; rx++) {
             for (byte ry = 0; ry < CHUNK_SIZE; ry++) {
-                for (byte layer = 0; layer < CHUNK_LAYERS; layer++) {
-                    tile = chunk.tiles[rx][ry][layer];
+                stack = chunk.stacks[rx][ry];
+
+                for (byte layer = 0; layer < LAYERS; layer++) {
+                    tile = stack.tiles[layer];
                     if (tile == null) continue;
 
                     compound = TILE_COMPOUND_MAP.get(tile.type.id);
-                    p = compound.animation[tile.variant];
-                    tileMesh = compound.sprites[tile.variant][(tick / p.ticks) % p.frames];
+                    params = compound.animation[tile.variant];
+                    tileMesh = compound.sprites[tile.variant][(tick / params.ticks) % params.frames];
+
                     for (int i = 0; i < tileMesh.vertices.length; i += 3) {
                         vertexBuffer.put((tileMesh.vertices[i + 0] + rx) / CHUNK_SIZE);
                         vertexBuffer.put((tileMesh.vertices[i + 1] + ry) / CHUNK_SIZE);

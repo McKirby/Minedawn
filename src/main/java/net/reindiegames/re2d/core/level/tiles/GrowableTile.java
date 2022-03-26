@@ -1,9 +1,8 @@
 package net.reindiegames.re2d.core.level.tiles;
 
 import net.reindiegames.re2d.core.CoreParameters;
-import net.reindiegames.re2d.core.level.Chunk;
-import net.reindiegames.re2d.core.level.Level;
 import net.reindiegames.re2d.core.level.TileEntity;
+import net.reindiegames.re2d.core.level.TileStack;
 import net.reindiegames.re2d.core.level.TileType;
 
 import java.util.Random;
@@ -19,8 +18,8 @@ public class GrowableTile extends TileEntity {
     private short growState;
     private final short maxGrowState;
 
-    protected GrowableTile(Level level, Chunk chunk, int tx, int ty, TileType type, float minSec, float maxSec) {
-        super(level, chunk, tx, ty, type);
+    protected GrowableTile(TileStack stack, byte layer, TileType type, float minSec, float maxSec) {
+        super(stack, layer, type);
 
         this.maxGrowState = (short) (type.getVariants() - 1);
 
@@ -41,7 +40,7 @@ public class GrowableTile extends TileEntity {
         lastGrow = ticksExisted;
 
         super.variant = (short) (super.type.getDefaultVariant() + growState);
-        super.chunk.changed = true;
+        super.stack.chunk.changed = true;
     }
 
     public boolean isHarvestable() {

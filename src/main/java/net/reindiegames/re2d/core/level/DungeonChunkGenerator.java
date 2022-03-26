@@ -342,8 +342,8 @@ public class DungeonChunkGenerator implements ChunkGenerator {
                     }
                 }
 
-                tiles[rx][ry][Chunk.TERRAIN_LAYER_1] = type.id;
-                variants[rx][ry][Chunk.TERRAIN_LAYER_1] = variant;
+                tiles[rx][ry][TileStack.TERRAIN_LAYER_1] = type.id;
+                variants[rx][ry][TileStack.TERRAIN_LAYER_1] = variant;
             }
         }
     }
